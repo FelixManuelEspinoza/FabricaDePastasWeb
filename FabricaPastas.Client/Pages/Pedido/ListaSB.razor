@@ -1,0 +1,389 @@
+﻿@page "/admin/pedidos"
+@page "/api/Pedido/ListaSB"
+@layout FabricaPastas.Client.Layout.AdminLayout
+
+@inject FabricaPastas.Client.Servicios.IHTTPServicio http
+@inject NavigationManager navigationManager
+
+@using FabricaPastas.BD.Data.Entity
+@using Microsoft.AspNetCore.Components.Forms
+
+<div class="container my-5">
+    <div class="text-center mb-4">
+        <h1 class="display-6 fw-bold text-primary">📦 Registro de pedidos</h1>
+        <p class="text-muted">Búsqueda + filtros + cambio de estado (flujo controlado)</p>
+    </div>
+
+    <!-- Panel de filtros -->
+    <div class="card shadow-sm border-start border-4 border-primary mb-4">
+        <div class="card-body">
+            <div class="row g-3 align-items-end">
+
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">🔎 Código</label>
+                    <input class="form-control"
+                           placeholder="Ej: A1B2C3D4"
+                           @bind="busquedaCodigo"
+                           @bind:event="oninput" />
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">🔎 Usuario</label>
+                    <input class="form-control"
+                           placeholder="Ej: juan123"
+                           @bind="busquedaUsuario"
+                           @bind:event="oninput" />
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">🧾 Tipo cliente</label>
+                    <select class="form-select" @bind="filtroTipoCliente">
+                        <option value="Todos">Todos</option>
+                        <option value="Minorista">Minorista</option>
+                        <option value="Mayorista">Mayorista</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">📌 Estado</label>
+                    <select class="form-select" @bind="filtroEstadoId">
+                        <option value="0">Todos</option>
+                        @foreach (var e in (Estados ?? new()))
+                        {
+                            <option value="@e.Id">@e.Descripcion</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-2 d-flex gap-2">
+                    <button class="btn btn-outline-secondary w-100" @onclick="LimpiarFiltros">Limpiar</button>
+                    <button class="btn btn-outline-primary w-100" @onclick="Leer">🔄</button>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">📅 Desde</label>
+                    <InputDate class="form-control" @bind-Value="fechaDesde" />
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">📅 Hasta</label>
+                    <InputDate class="form-control" @bind-Value="fechaHasta" />
+                </div>
+
+                <div class="col-md-6 d-flex align-items-end">
+                    <small class="text-muted">
+                        Tip: si no elegís fechas, se muestran todos. El filtro toma FechaPedido (día completo).
+                    </small>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(Mensaje))
+    {
+        <div class="alert alert-danger text-center shadow-sm">❌ Error: @Mensaje</div>
+    }
+    else if (Lista_pedidos == null)
+    {
+        <div class="alert alert-secondary text-center shadow-sm">🔄 Buscando pedidos...</div>
+    }
+    else if (!PedidosFiltrados.Any())
+    {
+        <div class="alert alert-warning text-center shadow-sm">
+            ⚠️ No hay pedidos que coincidan con el filtro/búsqueda.
+        </div>
+    }
+    else
+    {
+        <div class="card shadow-sm border-start border-4 border-success">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+                    <h5 class="card-title fw-semibold text-success mb-0">📋 Pedidos</h5>
+                    <span class="badge bg-dark">Mostrando: @PedidosFiltrados.Count()</span>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover align-middle">
+                        <thead class="table-light text-center">
+                            <tr>
+                                <th>Código</th>
+                                <th>Usuario</th>
+                                <th>Tipo</th>
+                                <th>Estado</th>
+                                <th>📅 Fecha pedido</th>
+                                <th>🚚 Fecha entrega</th>
+                                <th>📝 Obs. catering</th>
+                                <th>💰 Total</th>
+                                <th style="width: 360px;">⚙️ Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in PedidosFiltrados.OrderByDescending(x => x.FechaPedido))
+                            {
+                                var nombreUsuario = item.Usuario?.NombreUsuario ?? "(sin usuario)";
+                                var tipoDesc = item.Usuario?.Tipo_Cliente?.Descripcion ?? "-";
+                                var esMayorista = (tipoDesc ?? "").ToLower().Contains("mayor");
+
+                                var estadoActualDesc = EstadoDescripcion(item.Estado_Pedido_Id);
+
+                                var transiciones = EstadosPermitidos(item.Estado_Pedido_Id).ToList();
+                                var tieneTransiciones = transiciones.Count > 0;
+
+                                <tr @key="item.Id">
+                                    <td class="text-center fw-semibold">@item.CodigoPedido</td>
+
+                                    <td class="text-center">@nombreUsuario</td>
+
+                                    <td class="text-center">
+                                        <span class="badge @(esMayorista ? "bg-warning text-dark" : "bg-info")">
+                                            @tipoDesc
+                                        </span>
+                                    </td>
+
+                                    <td class="text-center">
+                                        <span class="badge bg-secondary">@estadoActualDesc</span>
+                                    </td>
+
+                                    <td class="text-center">@item.FechaPedido.ToString("dd/MM/yyyy")</td>
+
+                                    <td class="text-center">
+                                        @(item.FechaEntrega.HasValue? item.FechaEntrega.Value.ToString("dd/MM/yyyy") : "-")
+                                    </td>
+
+                                    <td>@(string.IsNullOrWhiteSpace(item.ObservacionesCatering) ? "-" : item.ObservacionesCatering)</td>
+
+                                    <td class="text-end">$ @item.Total.ToString("N2")</td>
+
+                                    <td class="text-center">
+                                        <button class="btn btn-sm btn-outline-secondary me-2"
+                                                @onclick="@(() => VerDetalle(item.Id))">
+                                            👁 Ver
+                                        </button>
+
+                                        <button class="btn btn-sm btn-primary me-2"
+                                                @onclick="@(() => DescargarRecibo(item.Id))">
+                                            🧾 PDF
+                                        </button>
+
+                                        @if (!tieneTransiciones)
+                                        {
+                                            <span class="badge bg-light text-dark border">Sin cambios</span>
+                                        }
+                                        else
+                                        {
+                                            <!-- Select controlado + RESET luego de cambiar -->
+                                            <select class="form-select form-select-sm d-inline-block"
+                                                    style="width: 185px;"
+                                                    value="@GetSeleccion(item.Id)"
+                                                    @onchange="@((ChangeEventArgs e) => CambiarEstadoDesdeUI(item.Id, item.Estado_Pedido_Id, e.Value))">
+                                                <option value="">Cambiar...</option>
+                                                @foreach (var next in transiciones)
+                                                {
+                                                    <option value="@next.Id">@next.Descripcion</option>
+                                                }
+                                            </select>
+
+                                            @if (CambiandoPedidoId == item.Id)
+                                            {
+                                                <span class="ms-2 text-muted">⏳</span>
+                                            }
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private List<Pedido>? Lista_pedidos;
+    private List<Estado_Pedido>? Estados;
+    private string? Mensaje;
+
+    // filtros
+    private string busquedaUsuario = "";
+    private string busquedaCodigo = "";
+    private string filtroTipoCliente = "Todos";
+    private int filtroEstadoId = 0;
+
+    // fechas
+    private DateTime? fechaDesde = null;
+    private DateTime? fechaHasta = null;
+
+    // Para evitar “atascos” del select y poder resetearlo por pedido
+    private readonly Dictionary<int, string> _seleccionEstado = new();
+    private int CambiandoPedidoId = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Leer();
+    }
+
+    private async Task Leer()
+    {
+        Mensaje = null;
+
+        var respEstados = await http.Get<List<Estado_Pedido>>("api/Pedido/Estados");
+        Estados = respEstados.Error ? new() : (respEstados.Respuesta ?? new());
+
+        var resp = await http.Get<List<Pedido>>("api/Pedido");
+        if (!resp.Error)
+            Lista_pedidos = resp.Respuesta ?? new();
+        else
+            Mensaje = await resp.ObtenerError();
+
+        // reset selecciones al recargar
+        _seleccionEstado.Clear();
+        CambiandoPedidoId = 0;
+    }
+
+    private IEnumerable<Pedido> PedidosFiltrados
+    {
+        get
+        {
+            if (Lista_pedidos == null) return Enumerable.Empty<Pedido>();
+            IEnumerable<Pedido> query = Lista_pedidos;
+
+            // Tipo cliente (soporta “Mayorista/Mayoristas” y “Minorista/Minoristas”)
+            if (filtroTipoCliente != "Todos")
+            {
+                query = query.Where(p =>
+                {
+                    var t = (p.Usuario?.Tipo_Cliente?.Descripcion ?? "").Trim();
+                    if (string.IsNullOrWhiteSpace(t)) return false;
+
+                    var esMay = t.StartsWith("Mayor", StringComparison.OrdinalIgnoreCase);
+                    var esMin = t.StartsWith("Min", StringComparison.OrdinalIgnoreCase);
+
+                    return filtroTipoCliente == "Mayorista" ? esMay : esMin;
+                });
+            }
+
+            // Estado
+            if (filtroEstadoId != 0)
+                query = query.Where(p => p.Estado_Pedido_Id == filtroEstadoId);
+
+            // Usuario (nombre de usuario)
+            if (!string.IsNullOrWhiteSpace(busquedaUsuario))
+            {
+                var q = busquedaUsuario.Trim();
+                query = query.Where(p => (p.Usuario?.NombreUsuario ?? "")
+                    .Contains(q, StringComparison.OrdinalIgnoreCase));
+            }
+
+            // Código
+            if (!string.IsNullOrWhiteSpace(busquedaCodigo))
+            {
+                var q = busquedaCodigo.Trim();
+                query = query.Where(p => (p.CodigoPedido ?? "")
+                    .Contains(q, StringComparison.OrdinalIgnoreCase));
+            }
+
+            // Fechas por día completo
+            if (fechaDesde.HasValue)
+            {
+                var d = fechaDesde.Value.Date;
+                query = query.Where(p => p.FechaPedido.Date >= d);
+            }
+            if (fechaHasta.HasValue)
+            {
+                var h = fechaHasta.Value.Date;
+                query = query.Where(p => p.FechaPedido.Date <= h);
+            }
+
+            return query;
+        }
+    }
+
+    private void LimpiarFiltros()
+    {
+        busquedaUsuario = "";
+        busquedaCodigo = "";
+        filtroTipoCliente = "Todos";
+        filtroEstadoId = 0;
+        fechaDesde = null;
+        fechaHasta = null;
+
+        // no tocamos Lista_pedidos, solo UI
+        _seleccionEstado.Clear();
+        CambiandoPedidoId = 0;
+    }
+
+    private void DescargarRecibo(int idPedido)
+        => navigationManager.NavigateTo($"api/Pedido/{idPedido}/recibo", true);
+
+    private void VerDetalle(int idPedido)
+        => navigationManager.NavigateTo($"/admin/pedidos/detalle/{idPedido}");
+
+    private string EstadoDescripcion(int estadoId)
+        => Estados?.FirstOrDefault(x => x.Id == estadoId)?.Descripcion ?? $"#{estadoId}";
+
+    // Flujo B (controlado)
+    private IEnumerable<Estado_Pedido> EstadosPermitidos(int estadoActualId)
+    {
+        if (Estados == null || Estados.Count == 0) return Enumerable.Empty<Estado_Pedido>();
+
+        if (estadoActualId == 1) return Estados.Where(e => e.Id == 2 || e.Id == 5); // Pendiente -> En prep / Cancelado
+        if (estadoActualId == 2) return Estados.Where(e => e.Id == 3 || e.Id == 5); // En prep -> Listo / Cancelado
+        if (estadoActualId == 3) return Estados.Where(e => e.Id == 4);              // Listo -> Entregado
+
+        // Entregado / Cancelado -> sin cambios
+        return Enumerable.Empty<Estado_Pedido>();
+    }
+
+    private string GetSeleccion(int pedidoId)
+        => _seleccionEstado.TryGetValue(pedidoId, out var v) ? v : "";
+
+    private async Task CambiarEstadoDesdeUI(int pedidoId, int estadoActualId, object? nuevoValue)
+    {
+        // Guardamos selección para que el DOM sea consistente
+        var nuevoStr = nuevoValue?.ToString() ?? "";
+        _seleccionEstado[pedidoId] = nuevoStr;
+
+        if (string.IsNullOrWhiteSpace(nuevoStr))
+            return;
+
+        if (!int.TryParse(nuevoStr, out var nuevoEstadoId))
+        {
+            _seleccionEstado[pedidoId] = "";
+            return;
+        }
+
+        // Validación UI (el server también valida)
+        if (!EstadosPermitidos(estadoActualId).Any(e => e.Id == nuevoEstadoId))
+        {
+            Mensaje = "Transición de estado no permitida.";
+            _seleccionEstado[pedidoId] = "";
+            return;
+        }
+
+        Mensaje = null;
+        CambiandoPedidoId = pedidoId;
+
+        var resp = await http.Put($"api/Pedido/{pedidoId}/estado", nuevoEstadoId);
+        if (resp.Error)
+        {
+            Mensaje = await resp.ObtenerError();
+            CambiandoPedidoId = 0;
+            _seleccionEstado[pedidoId] = ""; // reset
+            return;
+        }
+
+        // Update local
+        var pedido = Lista_pedidos?.FirstOrDefault(p => p.Id == pedidoId);
+        if (pedido != null)
+            pedido.Estado_Pedido_Id = nuevoEstadoId;
+
+        // 🔥 Esto es lo que evita que quede “clavado” en Cambiar...
+        _seleccionEstado[pedidoId] = "";
+        CambiandoPedidoId = 0;
+
+        StateHasChanged();
+    }
+}

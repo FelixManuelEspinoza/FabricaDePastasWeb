@@ -1,0 +1,197 @@
+﻿@page "/api/Producto/Crear"
+
+@inject FabricaPastas.Client.Servicios.IHTTPServicio http
+@inject NavigationManager navigationManager
+
+<h1 class="text-center mb-4 text-success fw-bold">
+    <i class="bi bi-box-fill me-2"></i>Carga de productos (Stock)
+</h1>
+
+<EditForm Model="producto" OnValidSubmit="Grabar" class="container">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="card shadow-sm border-start border-4 border-success mb-5">
+        <div class="card-body">
+            <div class="row g-4">
+
+                <!-- Nombre del producto -->
+                <div class="col-md-6">
+                    <label for="nombre" class="form-label fw-semibold">
+                        <i class="bi bi-tag-fill me-1"></i>Nombre del producto
+                    </label>
+                    <input type="text" id="nombre" @bind="producto.Nombre" class="form-control" placeholder="Ej: Ravioles de ricota" />
+                    <ValidationMessage For="@(() => producto.Nombre)" />
+                </div>
+
+                <!-- Categoría (ID) - necesario por FK -->
+                <div class="col-md-6">
+                    <label for="categoriaId" class="form-label fw-semibold">
+                        <i class="bi bi-diagram-3-fill me-1"></i>Categoría (ID)
+                    </label>
+                    <input type="number" id="categoriaId" @bind="producto.CategoriaProductoId" class="form-control" min="1" />
+                    <div class="form-text">Poné un ID existente. (Después lo hacemos con combo)</div>
+                </div>
+
+                <!-- Descripción -->
+                <div class="col-md-6">
+                    <label for="descripcion" class="form-label fw-semibold">
+                        <i class="bi bi-card-text me-1"></i>Descripción
+                    </label>
+                    <input type="text" id="descripcion" @bind="producto.Descripcion" class="form-control" placeholder="Ej: Pasta fresca artesanal" />
+                    <ValidationMessage For="@(() => producto.Descripcion)" />
+                </div>
+
+                <!-- Precio base (minorista por defecto) -->
+                <div class="col-md-3">
+                    <label for="preciobase" class="form-label fw-semibold">
+                        <i class="bi bi-currency-dollar me-1"></i>Precio base
+                    </label>
+                    <input type="number" id="preciobase" @bind="producto.PrecioBase" class="form-control" step="0.01" min="0" />
+                    <ValidationMessage For="@(() => producto.PrecioBase)" />
+                </div>
+
+                <!-- Stock -->
+                <div class="col-md-3">
+                    <label for="stock" class="form-label fw-semibold">
+                        <i class="bi bi-stack me-1"></i>Stock
+                    </label>
+                    <input type="number" id="stock" @bind="producto.Stock" class="form-control" min="0" />
+                    <ValidationMessage For="@(() => producto.Stock)" />
+                </div>
+
+                <!-- Activo -->
+                <div class="col-md-3 d-flex align-items-end">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="activo" @bind="producto.Activo" />
+                        <label class="form-check-label fw-semibold" for="activo">
+                            Activo
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Imagen -->
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">
+                        <i class="bi bi-image me-1"></i>Imagen del producto
+                    </label>
+                    <InputFile OnChange="SubirImagen" accept="image/*" class="form-control" />
+
+                    @if (!string.IsNullOrEmpty(producto.ImagenUrl))
+                    {
+                        <!-- ✅ Previsualización de la imagen -->
+                        <img src="@producto.ImagenUrl" class="img-thumbnail mt-3" style="max-width: 150px;" />
+                        <div class="form-text">URL: @producto.ImagenUrl</div>
+                    }
+                </div>
+
+                <!-- Mensaje -->
+                @if (!string.IsNullOrWhiteSpace(mensaje))
+                {
+                    <div class="col-12">
+                        <div class="alert @(esError ? "alert-danger" : "alert-success")">
+                            @mensaje
+                        </div>
+                    </div>
+                }
+
+                <!-- Botones -->
+                <div class="col-12 text-center mt-4">
+                    <button class="btn btn-success me-2" type="submit" disabled="@cargando">
+                        <i class="bi bi-box-arrow-in-down me-1"></i>
+                        @(cargando ? "Registrando..." : "Registrar producto")
+                    </button>
+
+                    <button class="btn btn-outline-secondary me-2" type="button" @onclick="Cancelar">
+                        <i class="bi bi-x-circle me-1"></i>Cancelar
+                    </button>
+
+                    <button class="btn btn-outline-secondary" type="button" @onclick="ListaProductos">
+                        <i class="bi bi-list-ul me-1"></i>Ver lista
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    private FabricaPastas.BD.Data.Entity.Producto producto = new()
+    {
+        Activo = true,
+        Stock = 0,
+        PrecioBase = 0
+    };
+
+    private bool cargando = false;
+    private string mensaje = "";
+    private bool esError = false;
+
+    // ✅ Subida de imagen (multipart) al endpoint existente: api/Producto/SubirImagen
+    private async Task SubirImagen(InputFileChangeEventArgs e)
+    {
+        try
+        {
+            var archivo = e.File;
+            if (archivo == null) return;
+
+            using var contenido = new MultipartFormDataContent();
+            var stream = archivo.OpenReadStream(10_000_000); // límite 10 MB
+
+            var fileContent = new StreamContent(stream);
+            fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(archivo.ContentType);
+
+            contenido.Add(fileContent, "file", archivo.Name);
+
+            using var client = new HttpClient { BaseAddress = new Uri(navigationManager.BaseUri) };
+            var response = await client.PostAsync("api/Producto/SubirImagen", contenido);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var url = await response.Content.ReadAsStringAsync();
+                producto.ImagenUrl = url.Trim('"'); // Server devuelve "/images/xxx.png"
+                esError = false;
+                mensaje = "✅ Imagen subida correctamente.";
+            }
+            else
+            {
+                esError = true;
+                mensaje = $"❌ Error al subir imagen: {response.StatusCode}";
+            }
+        }
+        catch (Exception ex)
+        {
+            esError = true;
+            mensaje = $"❌ Error al subir imagen: {ex.Message}";
+        }
+    }
+
+    private async Task Grabar()
+    {
+        mensaje = "";
+        esError = false;
+        cargando = true;
+
+        // ✅ En tu controller: POST api/Producto devuelve int (ID creado)
+        var httpRespuesta = await http.Post<FabricaPastas.BD.Data.Entity.Producto, int>("api/Producto", producto);
+
+        cargando = false;
+
+        if (!httpRespuesta.Error)
+        {
+            esError = false;
+            mensaje = $"✅ Producto creado (ID: {httpRespuesta.Respuesta}).";
+            navigationManager.NavigateTo("/api/Producto/Lista");
+        }
+        else
+        {
+            esError = true;
+            var err = await httpRespuesta.ObtenerError();
+            mensaje = string.IsNullOrWhiteSpace(err) ? "❌ Error al guardar el producto." : err;
+        }
+    }
+
+    private void Cancelar() => navigationManager.NavigateTo("/InicioUsuario");
+    private void ListaProductos() => navigationManager.NavigateTo("/api/Producto/Lista");
+}

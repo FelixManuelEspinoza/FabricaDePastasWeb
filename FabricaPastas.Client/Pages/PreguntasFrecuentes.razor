@@ -1,0 +1,164 @@
+﻿@page "/preguntas-frecuentes"
+@*
+    Página FAQ usando Accordion de Bootstrap.
+    - Requiere bootstrap.bundle.js (incluye collapse).
+    - Si ya lo tenés global en index.html, este <script> se puede quitar.
+*@
+
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h1 class="display-5 fw-bold text-primary">
+            <i class="bi bi-question-circle-fill me-2"></i>Preguntas Frecuentes
+        </h1>
+        <p class="text-muted">¿Tenés dudas? Acá respondemos lo más importante para que sigas sin trabas 🚀</p>
+    </div>
+
+    @* Accordion: contenedor general *@
+    <div class="accordion" id="faqAccordion">
+
+        @* Item 1 *@
+        <div class="accordion-item border-start border-4 border-danger">
+            <h2 class="accordion-header" id="headingOne">
+                <button class="accordion-button" type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#collapseOne"
+                        aria-expanded="true"
+                        aria-controls="collapseOne">
+                    🔐 Problemas de Acceso e Inicio de Sesión
+                </button>
+            </h2>
+
+            <div id="collapseOne"
+                 class="accordion-collapse collapse show"
+                 aria-labelledby="headingOne"
+                 data-bs-parent="#faqAccordion">
+                <div class="accordion-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <strong>No puedo iniciar sesión:</strong><br>
+                            - Contraseña incorrecta<br>
+                            - Usuario bloqueado o inactivo<br>
+                            <em>Solución:</em> Restablecé la contraseña, esperá 10-15 min o contactá al administrador.
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Mi sesión caducó:</strong><br>
+                            - Expiración por inactividad<br>
+                            <em>Solución:</em> Volvé a iniciar sesión. Guardá tu trabajo con frecuencia.
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Pantalla en blanco o congelada:</strong><br>
+                            - Caché del navegador o conexión inestable<br>
+                            <em>Solución:</em> Borrá caché/cookies o usá otro navegador.
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        @* Item 2 *@
+        <div class="accordion-item border-start border-4 border-warning">
+            <h2 class="accordion-header" id="headingTwo">
+                <button class="accordion-button collapsed" type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#collapseTwo"
+                        aria-expanded="false"
+                        aria-controls="collapseTwo">
+                    🧑‍💼 Problemas de Roles y Permisos
+                </button>
+            </h2>
+
+            <div id="collapseTwo"
+                 class="accordion-collapse collapse"
+                 aria-labelledby="headingTwo"
+                 data-bs-parent="#faqAccordion">
+                <div class="accordion-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <strong>No puedo ver/editar ciertas secciones:</strong><br>
+                            - Rol sin permisos<br>
+                            <em>Solución:</em> Solicitá al Admin que te asigne los permisos necesarios.
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Error "Acceso Denegado":</strong><br>
+                            - Acción restringida por tu rol<br>
+                            <em>Solución:</em> Verificá autorización o pedí revisión de permisos.
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Datos personales incorrectos:</strong><br>
+                            - Registro desactualizado<br>
+                            <em>Solución:</em> Editá tu perfil o contactá a TI/Admin.
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        @* Item 3 *@
+        <div class="accordion-item border-start border-4 border-info">
+            <h2 class="accordion-header" id="headingThree">
+                <button class="accordion-button collapsed" type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#collapseThree"
+                        aria-expanded="false"
+                        aria-controls="collapseThree">
+                    📊 Problemas con la Carga de Datos y Visualización
+                </button>
+            </h2>
+
+            <div id="collapseThree"
+                 class="accordion-collapse collapse"
+                 aria-labelledby="headingThree"
+                 data-bs-parent="#faqAccordion">
+                <div class="accordion-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <strong>Lista vacía o mensaje de carga:</strong><br>
+                            - Filtrado excesivo, conexión o timeout<br>
+                            <em>Solución:</em> Quitá filtros, refrescá o reportá a soporte.
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Datos duplicados o inconsistentes:</strong><br>
+                            - Error de sincronización o JOIN<br>
+                            <em>Solución:</em> Reportá con ID y módulo afectado.
+                        </li>
+                        <li class="list-group-item">
+                            <strong>La página se refresca sola:</strong><br>
+                            - Bug en componente o validación<br>
+                            <em>Solución:</em> Describí el paso a paso y reportá el error.
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        @* Item 4 *@
+        <div class="accordion-item border-start border-4 border-success">
+            <h2 class="accordion-header" id="headingFour">
+                <button class="accordion-button collapsed" type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#collapseFour"
+                        aria-expanded="false"
+                        aria-controls="collapseFour">
+                    🧹 Consejos de Mantenimiento Básico
+                </button>
+            </h2>
+
+            <div id="collapseFour"
+                 class="accordion-collapse collapse"
+                 aria-labelledby="headingFour"
+                 data-bs-parent="#faqAccordion">
+                <div class="accordion-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Limpieza de caché:</strong> Ctrl + F5 (Windows) o Cmd + Shift + R (Mac).</li>
+                        <li class="list-group-item"><strong>Reporte de errores:</strong> Incluí pasos, captura y usuario afectado.</li>
+                        <li class="list-group-item"><strong>Compatibilidad:</strong> Usá navegadores actualizados como Chrome o Edge.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@* Si bootstrap.js ya está cargado globalmente en index.html, esto se puede borrar *@
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>

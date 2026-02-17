@@ -1,0 +1,284 @@
+﻿@page "/admin/productos"
+@layout FabricaPastas.Client.Layout.AdminLayout
+
+@inject IHTTPServicio http
+@inject NavigationManager nav
+
+<div class="container my-4">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+        <div>
+            <h3 class="mb-0">📦 Productos</h3>
+            <small class="text-muted">Administración de productos (crear/editar/eliminar) + imagen</small>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button class="btn btn-primary"
+                    @onclick="@(() => nav.NavigateTo("/admin/productos/crear"))">
+                ➕ Crear producto
+            </button>
+
+            <button class="btn btn-outline-secondary"
+                    @onclick="Leer">
+                🔄 Recargar
+            </button>
+        </div>
+    </div>
+
+    @* 🔥 ALERTA GLOBAL DE BAJO STOCK *@
+    @if (Productos != null && Productos.Any(p => p.Stock < 10))
+    {
+        <div class="alert alert-warning shadow-sm">
+            ⚠ Atención: Hay productos con bajo stock (menos de 10 unidades)
+        </div>
+    }
+
+    <!-- Filtros -->
+    <div class="card shadow-sm border-start border-4 border-primary mb-3">
+        <div class="card-body">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">🔎 Buscar por nombre</label>
+                    <input class="form-control"
+                           placeholder="Ej: ravioles..."
+                           @bind="busquedaNombre"
+                           @bind:event="oninput" />
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">🏷️ Categoría</label>
+                    <select class="form-select" @bind="filtroCategoriaId">
+                        <option value="0">Todas</option>
+                        @foreach (var c in (Categorias ?? new()))
+                        {
+                            <option value="@c.Id">@c.Nombre</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">✅ Activo</label>
+                    <select class="form-select" @bind="filtroActivo">
+                        <option value="Todos">Todos</option>
+                        <option value="Activos">Activos</option>
+                        <option value="Inactivos">Inactivos</option>
+                    </select>
+                </div>
+
+                <div class="col-md-12 d-flex gap-2">
+                    <button class="btn btn-outline-secondary" @onclick="LimpiarFiltros">Limpiar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(Mensaje))
+    {
+        <div class="alert alert-danger">@Mensaje</div>
+    }
+
+    @if (Productos == null)
+    {
+        <div class="alert alert-secondary">🔄 Cargando productos...</div>
+    }
+    else if (!ProductosFiltrados.Any())
+    {
+        <div class="alert alert-warning">⚠️ No hay productos que coincidan con el filtro/búsqueda.</div>
+    }
+    else
+    {
+        <div class="d-flex justify-content-end mb-2">
+            <span class="badge bg-dark">Mostrando: @ProductosFiltrados.Count()</span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover align-middle">
+                <thead class="table-light text-center">
+                    <tr>
+                        <th>ID</th>
+                        <th>Imagen</th>
+                        <th>Nombre</th>
+                        <th>Categoría</th>
+                        <th>Precio Base</th>
+                        <th>Stock</th>
+                        <th>Activo</th>
+                        <th style="width: 180px;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in ProductosFiltrados.OrderBy(x => x.Nombre))
+                    {
+                        <tr @key="p.Id">
+                            <td class="text-center">@p.Id</td>
+                            <td class="text-center">
+                                @if (!string.IsNullOrWhiteSpace(p.ImagenUrl))
+                                {
+                                    <img src="@p.ImagenUrl"
+                                         style="width:52px;height:52px;object-fit:cover;border-radius:10px;" />
+                                }
+                                else
+                                {
+                                    <span class="text-muted">—</span>
+                                }
+                            </td>
+                            <td>@p.Nombre</td>
+                            <td>@CategoriaNombre(p.CategoriaProductoId)</td>
+                            <td class="text-end">@p.PrecioBase.ToString("N2")</td>
+
+                            @* 🔥 STOCK CON ALERTA VISUAL *@
+                            <td class="text-center">
+                                @if (p.Stock < 10)
+                                {
+                                    <span class="badge bg-danger">
+                                        ⚠ Bajo stock (@p.Stock)
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success">
+                                        @p.Stock
+                                    </span>
+                                }
+                            </td>
+
+                            <td class="text-center">
+                                @if (p.Activo)
+                                {
+                                    <span class="badge bg-success">Sí</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">No</span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                <button class="btn btn-sm btn-outline-primary me-1"
+                                        @onclick="@(() => nav.NavigateTo($"/admin/productos/editar/{p.Id}"))">
+                                    ✏️ Editar
+                                </button>
+
+                                <button class="btn btn-sm btn-outline-danger"
+                                        @onclick="@(() => ConfirmarEliminar(p))">
+                                    🗑️ Borrar
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+<Confirmacion @ref="confirmacion"
+              Titulo="⚠️ Confirmación"
+              textCancelar="Cancelar"
+              textOk="Eliminar"
+              onCancel="@Cancelar"
+              onConfirm="@EliminarConfirmado">
+    <h5 class="text-danger text-center">Está por eliminar un producto. ¿Desea continuar?</h5>
+</Confirmacion>
+
+@code {
+    private List<FabricaPastas.BD.Data.Entity.Producto>? Productos;
+    private List<FabricaPastas.BD.Data.Entity.Categoria_Producto>? Categorias;
+    private string? Mensaje;
+
+    private Confirmacion? confirmacion;
+    private FabricaPastas.BD.Data.Entity.Producto? productoBorrar;
+
+    // filtros
+    private string busquedaNombre = "";
+    private int filtroCategoriaId = 0;
+    private string filtroActivo = "Todos";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Leer();
+    }
+
+    private async Task Leer()
+    {
+        Mensaje = null;
+        Productos = null;
+
+        var respCat = await http.Get<List<FabricaPastas.BD.Data.Entity.Categoria_Producto>>("api/Categoria_Producto");
+        Categorias = respCat.Error ? new() : (respCat.Respuesta ?? new());
+
+        var resp = await http.Get<List<FabricaPastas.BD.Data.Entity.Producto>>("api/Producto");
+        if (!resp.Error)
+            Productos = resp.Respuesta ?? new();
+        else
+            Mensaje = await resp.ObtenerError();
+    }
+
+    private IEnumerable<FabricaPastas.BD.Data.Entity.Producto> ProductosFiltrados
+    {
+        get
+        {
+            if (Productos == null) return Enumerable.Empty<FabricaPastas.BD.Data.Entity.Producto>();
+            IEnumerable<FabricaPastas.BD.Data.Entity.Producto> q = Productos;
+
+            if (!string.IsNullOrWhiteSpace(busquedaNombre))
+            {
+                var b = busquedaNombre.Trim();
+                q = q.Where(p => (p.Nombre ?? "").Contains(b, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (filtroCategoriaId != 0)
+            {
+                q = q.Where(p => p.CategoriaProductoId == filtroCategoriaId);
+            }
+
+            if (filtroActivo == "Activos")
+                q = q.Where(p => p.Activo);
+            else if (filtroActivo == "Inactivos")
+                q = q.Where(p => !p.Activo);
+
+            return q;
+        }
+    }
+
+    private void LimpiarFiltros()
+    {
+        busquedaNombre = "";
+        filtroCategoriaId = 0;
+        filtroActivo = "Todos";
+    }
+
+    private string CategoriaNombre(int categoriaId)
+    {
+        var c = Categorias?.FirstOrDefault(x => x.Id == categoriaId);
+        return c?.Nombre ?? $"#{categoriaId}";
+    }
+
+    private void ConfirmarEliminar(FabricaPastas.BD.Data.Entity.Producto p)
+    {
+        productoBorrar = p;
+        confirmacion?.Ver();
+    }
+
+    private void Cancelar()
+    {
+        productoBorrar = null;
+        confirmacion?.Ocultar();
+    }
+
+    private async Task EliminarConfirmado()
+    {
+        if (productoBorrar == null)
+        {
+            confirmacion?.Ocultar();
+            return;
+        }
+
+        var resp = await http.Delete($"api/Producto/{productoBorrar.Id}");
+
+        if (resp.Error)
+            Mensaje = "No se pudo eliminar el producto.";
+        else
+            await Leer();
+
+        productoBorrar = null;
+        confirmacion?.Ocultar();
+    }
+}

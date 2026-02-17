@@ -1,0 +1,69 @@
+.page {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1;
+}
+
+/* Sidebar estándar del template: NO tocar */
+.sidebar {
+    background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
+}
+
+/* 
+   top-row: barra superior DENTRO del main.
+   Ahora la usamos para mostrar el menú REAL.
+*/
+.top-row {
+    background-color: #f7f7f7;
+    border-bottom: 1px solid #d6d5d5;
+    height: 3.5rem;
+    display: flex;
+    align-items: center;
+}
+
+    /* Links dentro del top nav (NavLink se renderiza como <a>) */
+    .top-row ::deep a, .top-row ::deep .nav-link {
+        white-space: nowrap;
+        text-decoration: none;
+    }
+
+        .top-row ::deep a:hover, .top-row ::deep .nav-link:hover {
+            text-decoration: underline;
+        }
+
+@media (max-width: 640.98px) {
+    .top-row {
+        justify-content: space-between;
+    }
+}
+
+@media (min-width: 641px) {
+    .page {
+        flex-direction: row;
+    }
+
+    /* Sidebar estándar del template: NO tocar */
+    .sidebar {
+        width: 250px;
+        height: 100vh;
+        position: sticky;
+        top: 0;
+    }
+
+    /* La top-row se queda "pegada" arriba mientras scrolleás */
+    .top-row {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+    }
+
+    /* Padding estándar */
+    .top-row, article {
+        padding-left: 2rem !important;
+        padding-right: 1.5rem !important;
+    }
+}

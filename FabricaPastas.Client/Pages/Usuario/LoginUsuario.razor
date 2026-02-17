@@ -1,0 +1,121 @@
+﻿@page "/LoginUsuarios"
+
+@inject FabricaPastas.Client.Servicios.IHTTPServicio http
+@inject NavigationManager navigationManager
+@inject IJSRuntime JSRuntime
+
+@using FabricaPastas.Shared.DTO
+
+<h1 class="text-center mb-4">🔐 Iniciar sesión</h1>
+
+<EditForm Model="usuarioLogin" OnValidSubmit="IniciarSesion" class="container">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+
+            <div class="mb-3">
+                <label for="NombreUsuario" class="form-label">Usuario</label>
+                <InputText id="NombreUsuario"
+                           @bind-Value="usuarioLogin.NombreUsuario"
+                           class="form-control"
+                           placeholder="Ej: juan123" />
+                <ValidationMessage For="@(() => usuarioLogin.NombreUsuario)" />
+            </div>
+
+            <div class="mb-3">
+                <label for="Contraseña" class="form-label">Contraseña</label>
+                <InputText id="Contraseña"
+                           @bind-Value="usuarioLogin.Contraseña"
+                           type="password"
+                           class="form-control"
+                           placeholder="••••••••" />
+                <ValidationMessage For="@(() => usuarioLogin.Contraseña)" />
+            </div>
+
+            <div class="col-12 text-center mt-4">
+                <button class="btn btn-success me-2" type="submit" disabled="@cargando">
+                    @(cargando ? "Cargando..." : "✅ Iniciar sesión")
+                </button>
+            </div>
+
+        </div>
+    </div>
+</EditForm>
+
+@if (!string.IsNullOrWhiteSpace(Mensaje))
+{
+    <div class="alert alert-danger text-center mt-3">@Mensaje</div>
+}
+
+@code {
+    private CrearLoginDTO usuarioLogin = new();
+    private string Mensaje = string.Empty;
+    private bool cargando = false;
+
+    private async Task IniciarSesion()
+    {
+        Mensaje = string.Empty;
+        cargando = true;
+
+        try
+        {
+            var httpRespuesta = await http.Post<CrearLoginDTO, LoginRespuestaDTO>(
+                "api/Usuario/Login", usuarioLogin);
+
+            cargando = false;
+
+            if (httpRespuesta.Error)
+            {
+                Mensaje = await httpRespuesta.ObtenerError();
+                return;
+            }
+
+            var resultado = httpRespuesta.Respuesta;
+
+            if (resultado == null)
+            {
+                Mensaje = "Respuesta inválida del servidor.";
+                return;
+            }
+
+            if (!resultado.Exitoso)
+            {
+                Mensaje = resultado.Mensaje ?? "Usuario o contraseña incorrectos.";
+                return;
+            }
+
+            // ✅ Guardamos TODO lo necesario
+            await JSRuntime.InvokeVoidAsync("localStorage.setItem", "usuarioNombre", resultado.NombreUsuario ?? "");
+            await JSRuntime.InvokeVoidAsync("localStorage.setItem", "usuarioId", resultado.UsuarioId.ToString());
+            await JSRuntime.InvokeVoidAsync("localStorage.setItem", "usuarioRol", resultado.Rol ?? "");
+            await JSRuntime.InvokeVoidAsync("localStorage.setItem", "usuarioTipoCliente", resultado.TipoCliente ?? "");
+
+            // ✅ Para el catálogo: la página /catalogo-usuario lee "listaPrecioTipo"
+            // Mapeamos desde TipoCliente (Mayorista/Minorista o Mayoristas/Minoristas) a (Mayorista/Minorista)
+            var tipoCliente = (resultado.TipoCliente ?? "").Trim();
+
+            var lista = tipoCliente.StartsWith("Mayor", StringComparison.OrdinalIgnoreCase)
+                ? "Mayorista"
+                : "Minorista";
+
+            await JSRuntime.InvokeVoidAsync("localStorage.setItem", "listaPrecioTipo", lista);
+
+
+            if (!string.IsNullOrWhiteSpace(resultado.Token))
+                await JSRuntime.InvokeVoidAsync("localStorage.setItem", "authToken", resultado.Token);
+
+            // ✅ Redirección según rol (mantiene tu “separación de ventanas”)
+            if ((resultado.Rol ?? "").Equals("Administrador", StringComparison.OrdinalIgnoreCase))
+                navigationManager.NavigateTo("/InicioAdmin");
+            else
+                navigationManager.NavigateTo("/InicioUsuario");
+        }
+        catch (Exception ex)
+        {
+            cargando = false;
+            Mensaje = $"Ocurrió un error: {ex.Message}";
+        }
+    }
+}

@@ -1,0 +1,216 @@
+﻿@page "/pedido"
+
+@inject FabricaPastas.Client.Servicios.IHTTPServicio http
+@inject FabricaPastas.Client.Servicios.CarritoServicio carritoServicio
+@inject NavigationManager navigationManager
+@inject IJSRuntime JSRuntime
+
+@using FabricaPastas.Shared.DTO
+
+<h2 class="text-center mb-4">🧾 Finalizar Pedido</h2>
+
+@if (!pedidoEnviado)
+{
+    @if (!carritoServicio.Items.Any())
+    {
+        <div class="alert alert-warning text-center">
+            Tu carrito está vacío. <a href="/catalogo-usuario">Volver al catálogo</a>.
+        </div>
+    }
+    else
+    {
+        <EditForm Model="pedido" OnValidSubmit="CrearPedido">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="card shadow p-4 mb-4">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label>📅 Fecha del Pedido</label>
+                        <InputDate @bind-Value="pedido.Fecha_Pedido" class="form-control" />
+                    </div>
+                    <div class="col-md-6">
+                        <label>🚚 Fecha de Entrega</label>
+                        <InputDate @bind-Value="pedido.Fecha_Entrega" class="form-control" />
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label>💳 Forma de Pago</label>
+                        <InputSelect @bind-Value="pedido.Forma_Pago_Id" class="form-control">
+                            <option value="1">Efectivo</option>
+                            <option value="2">Transferencia Bancaria</option>
+                            <option value="3">Tarjeta</option>
+                        </InputSelect>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label>📦 Método de Entrega</label>
+                        <InputSelect @bind-Value="pedido.Metodo_Entrega_Id" class="form-control">
+                            <option value="1">Retiro en local</option>
+                            <option value="2">Envío a domicilio</option>
+                        </InputSelect>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label>📝 Observaciones de catering (opcional)</label>
+                    <InputTextArea @bind-Value="pedido.Observaciones_Catering" class="form-control" rows="2" />
+                </div>
+            </div>
+
+            <h5>🛍️ Productos del Pedido</h5>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Cantidad</th>
+                        <th>Precio Unitario</th>
+                        <th>Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in carritoServicio.Items)
+                    {
+                        <tr>
+                            <td>@item.Nombre</td>
+                            <td>@item.Cantidad</td>
+                            <td>$@item.PrecioUnitario</td>
+                            <td>$@item.Subtotal</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <div class="text-end">
+                <h5>Total: 💰 $@carritoServicio.ObtenerTotal()</h5>
+                <button type="submit" class="btn btn-success mt-3" disabled="@cargando">
+                    @(cargando ? "Enviando..." : "✅ Confirmar Pedido")
+                </button>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(mensaje))
+            {
+                <div class="alert @(esError ? "alert-danger" : "alert-success") mt-3">
+                    @mensaje
+                </div>
+            }
+        </EditForm>
+    }
+}
+else
+{
+    <div class="alert alert-success text-center mt-5">
+        🎉 <strong>¡Tu pedido fue registrado exitosamente!</strong><br />
+        Gracias por tu compra 🍝
+        <div class="mt-3 d-flex justify-content-center gap-2">
+            <button class="btn btn-primary" @onclick="VolverAlCatalogo">Volver al catálogo</button>
+
+            @if (pedidoCreadoId != 0)
+            {
+                <button class="btn btn-info" @onclick="DescargarRecibo">🧾 Descargar Recibo</button>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    private CrearPedidoDTO pedido = new();
+
+    private bool pedidoEnviado = false;
+    private int pedidoCreadoId = 0;
+
+    private bool cargando = false;
+    private string mensaje = "";
+    private bool esError = false;
+
+    // protected override async Task OnInitializedAsync()
+    // {
+    //     pedido.Fecha_Pedido = DateTime.Now;
+    //     pedido.Fecha_Entrega = DateTime.Now.AddDays(1);
+
+    //     pedido.Total = carritoServicio.ObtenerTotal();
+    //     pedido.Forma_Pago_Id = 1;
+    //     pedido.Metodo_Entrega_Id = 1;
+
+    //     // ✅ Traer UsuarioId del localStorage
+    //     var idStr = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "usuarioId");
+
+    //     if (!int.TryParse(idStr, out var usuarioId) || usuarioId <= 0)
+    //     {
+    //         // No hay sesión válida -> al login
+    //         navigationManager.NavigateTo("/LoginUsuarios");
+    //         return;
+    //     }
+
+    //     pedido.Usuario_Id = usuarioId; // ✅ CLAVE para que luego aparezca Usuario/Tipo en ListaSB
+    // }
+    @inject IJSRuntime JSRuntime
+
+    protected override async Task OnInitializedAsync()
+    {
+        pedido.Fecha_Pedido = DateTime.Now;
+        pedido.Fecha_Entrega = DateTime.Now.AddDays(1);
+        pedido.Total = carritoServicio.ObtenerTotal();
+        pedido.Forma_Pago_Id = 1;
+        pedido.Metodo_Entrega_Id = 1;
+
+        var userIdStr = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "usuarioId");
+        if (int.TryParse(userIdStr, out var userId))
+            pedido.Usuario_Id = userId;
+    }
+
+
+    private async Task CrearPedido()
+    {
+        try
+        {
+            mensaje = "";
+            esError = false;
+            cargando = true;
+
+            pedido.Productos = carritoServicio.Items
+                .Select(item => new CrearDetalle_PedidoDTO
+                {
+                    Producto_Id = item.ProductoId, // ✅ CarritoDTO usa ProductoId
+                    Nombre = item.Nombre,
+                    Cantidad = item.Cantidad,
+                    Precio_Unitario = item.PrecioUnitario
+                })
+                .ToList();
+
+            pedido.Total = carritoServicio.ObtenerTotal();
+
+            var respuesta = await http.Post<CrearPedidoDTO, int>("api/Pedido", pedido);
+
+            cargando = false;
+
+            if (!respuesta.Error)
+            {
+                pedidoCreadoId = respuesta.Respuesta;
+                carritoServicio.Vaciar();
+                pedidoEnviado = true;
+                return;
+            }
+
+            esError = true;
+            var error = await respuesta.ObtenerError();
+            mensaje = string.IsNullOrWhiteSpace(error) ? "Error al enviar el pedido." : error;
+        }
+        catch (Exception ex)
+        {
+            cargando = false;
+            esError = true;
+            mensaje = $"Error al crear pedido: {ex.Message}";
+        }
+    }
+
+    private void DescargarRecibo()
+    {
+        if (pedidoCreadoId != 0)
+            navigationManager.NavigateTo($"api/Pedido/{pedidoCreadoId}/recibo", true);
+    }
+
+    private void VolverAlCatalogo() => navigationManager.NavigateTo("/catalogo-usuario");
+}

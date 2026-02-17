@@ -1,0 +1,104 @@
+﻿@page "/Nosotros"
+@*
+    Página informativa.
+    Importante: para imágenes usamos rutas ABSOLUTAS "/Images/..."
+    porque las rutas relativas pueden fallar si estás en /Nosotros.
+*@
+
+<div class="container mt-5">
+
+    @* Encabezado *@
+    <div class="text-center mb-4">
+        <h1 class="fw-bold text-danger">
+            <i class="bi bi-tools me-2"></i>Nosotros
+        </h1>
+        <p class="text-muted">Conocé la historia y la pasión detrás de nuestra fábrica de pastas.</p>
+    </div>
+
+    @* Sección: Imagen + texto *@
+    <div class="row align-items-center mb-5">
+        <div class="col-md-6">
+            @* Imagen principal *@
+            <img src="/Images/FabricaDePastas.jpg"
+                 alt="Fábrica de pastas" class="img-fluid rounded shadow-sm">
+        </div>
+
+        <div class="col-md-6">
+            <h3 class="text-primary fw-semibold mb-3">
+                <i class="bi bi-journal-text me-2"></i>Nuestra Historia
+            </h3>
+
+            @* Texto descriptivo *@
+            <p class="text-muted" style="text-align: justify;">
+                La Nonna nació hace más de 20 años como un pequeño taller familiar.
+                Hoy somos una fábrica que combina tradición artesanal con tecnología moderna,
+                ofreciendo pastas frescas y secas de la más alta calidad.
+            </p>
+
+            <p class="text-muted" style="text-align: justify;">
+                Elaboramos <strong>ravioles rellenos</strong>, <strong>ñoquis de papa</strong>,
+                <strong>tallarines al huevo</strong>, <strong>pasta integral</strong> y opciones
+                <strong>sin gluten</strong>. Además, contamos con una línea de <strong>salsas caseras</strong>
+                como pesto, bolognesa y cuatro quesos.
+            </p>
+        </div>
+    </div>
+
+    @* Sección: misión/valores en una card *@
+    <div class="card border-0 shadow-sm mb-5">
+        <div class="card-body">
+            <h3 class="card-title text-success fw-semibold mb-3">
+                <i class="bi bi-heart-fill me-2"></i>Misión y Valores
+            </h3>
+
+            <ul class="list-unstyled text-muted">
+                <li><i class="bi bi-check-circle-fill text-success me-2"></i>Ofrecer productos frescos y de calidad.</li>
+                <li><i class="bi bi-check-circle-fill text-success me-2"></i>Respetar la tradición italiana en cada receta.</li>
+                <li><i class="bi bi-check-circle-fill text-success me-2"></i>Innovar con opciones saludables e inclusivas.</li>
+                <li><i class="bi bi-check-circle-fill text-success me-2"></i>Generar momentos de unión alrededor de la mesa.</li>
+            </ul>
+        </div>
+    </div>
+
+    @* Sección: grilla de productos (cards) *@
+    <div class="text-center mb-4">
+        <h3 class="fw-bold text-warning">
+            <i class="bi bi-basket-fill me-2"></i>Nuestros Productos
+        </h3>
+    </div>
+
+    <div class="row g-4">
+
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <img src="/Images/Ravioles.jpg" class="card-img-top" alt="Ravioles">
+                <div class="card-body">
+                    <h5 class="card-title text-primary">Ravioles</h5>
+                    <p class="card-text text-muted">Rellenos de ricota y espinaca, elaborados con masa fresca.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                @* OJO: si tenés el archivo con nombre raro, renombralo o ajustá aquí *@
+                <img src="/Images/#U00f1osquis.jpg" class="card-img-top" alt="Ñoquis">
+                <div class="card-body">
+                    <h5 class="card-title text-primary">Ñoquis</h5>
+                    <p class="card-text text-muted">Suaves y esponjosos, hechos con papa seleccionada.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <img src="/Images/Tallarines.jpg" class="card-img-top" alt="Tallarines">
+                <div class="card-body">
+                    <h5 class="card-title text-primary">Tallarines</h5>
+                    <p class="card-text text-muted">Clásicos al huevo, ideales para acompañar con nuestras salsas.</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

@@ -1,0 +1,209 @@
+﻿@page "/admin/productos/crear"
+@layout FabricaPastas.Client.Layout.AdminLayout
+
+@using Microsoft.AspNetCore.Components.Forms
+@using System.Net.Http.Headers
+
+@inject IHTTPServicio http
+@inject HttpClient Http
+@inject IJSRuntime JSRuntime
+@inject NavigationManager nav
+
+<div class="container my-4">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <h3 class="mb-0">➕ Crear producto</h3>
+        <button class="btn btn-outline-secondary"
+                @onclick="@(() => nav.NavigateTo("/admin/productos"))">
+            ⬅️ Volver
+        </button>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(Mensaje))
+    {
+        <div class="alert alert-danger">@Mensaje</div>
+    }
+
+    @if (Categorias == null)
+    {
+        <div class="alert alert-secondary">🔄 Cargando categorías...</div>
+    }
+    else
+    {
+        <EditForm Model="Producto" OnValidSubmit="Guardar">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Nombre</label>
+                    <InputText class="form-control" @bind-Value="Producto.Nombre" />
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Categoría</label>
+                    <InputSelect class="form-select" @bind-Value="Producto.CategoriaProductoId">
+                        <option value="0">-- Seleccionar --</option>
+                        @foreach (var c in Categorias)
+                        {
+                            <option value="@c.Id">@c.Nombre</option>
+                        }
+                    </InputSelect>
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label">Descripción</label>
+                    <InputTextArea class="form-control" @bind-Value="Producto.Descripcion" />
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Precio Base</label>
+                    <InputNumber class="form-control" @bind-Value="Producto.PrecioBase" />
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Stock</label>
+                    <InputNumber class="form-control" @bind-Value="Producto.Stock" />
+                </div>
+
+                <div class="col-md-4 d-flex align-items-end">
+                    <div class="form-check">
+                        <InputCheckbox class="form-check-input" @bind-Value="Producto.Activo" />
+                        <label class="form-check-label">Activo</label>
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label">Imagen</label>
+                    <InputFile OnChange="SubirImagen" />
+                    @if (subiendoImagen)
+                    {
+                        <div class="text-muted mt-2">📤 Subiendo imagen...</div>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Producto.ImagenUrl))
+                    {
+                        <div class="mt-2">
+                            <img src="@Producto.ImagenUrl"
+                                 style="max-width:220px;border-radius:14px;box-shadow:0 4px 18px rgba(0,0,0,.12)" />
+                        </div>
+                    }
+                </div>
+
+                <div class="col-12 d-flex gap-2 mt-2">
+                    <button class="btn btn-primary" type="submit" disabled="@guardando">
+                        💾 Guardar
+                    </button>
+
+                    <button class="btn btn-outline-secondary" type="button"
+                            @onclick="@(() => nav.NavigateTo("/admin/productos"))">
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+        </EditForm>
+    }
+</div>
+
+@code {
+    private FabricaPastas.BD.Data.Entity.Producto Producto = new()
+    {
+        Activo = true,
+        Stock = 0,
+        PrecioBase = 0
+    };
+
+    private List<FabricaPastas.BD.Data.Entity.Categoria_Producto>? Categorias;
+    private string? Mensaje;
+    private bool subiendoImagen;
+    private bool guardando;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarCategorias();
+    }
+
+    private async Task CargarCategorias()
+    {
+        var resp = await http.Get<List<FabricaPastas.BD.Data.Entity.Categoria_Producto>>("api/Categoria_Producto");
+        if (!resp.Error)
+            Categorias = resp.Respuesta ?? new();
+        else
+        {
+            Categorias = new();
+            Mensaje = await resp.ObtenerError();
+        }
+    }
+
+    private async Task SubirImagen(InputFileChangeEventArgs e)
+    {
+        try
+        {
+            Mensaje = null;
+            subiendoImagen = true;
+
+            var archivo = e.File;
+            if (archivo == null)
+                return;
+
+            var token = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "authToken");
+
+            using var content = new MultipartFormDataContent();
+            var stream = archivo.OpenReadStream(maxAllowedSize: 10_000_000);
+
+            using var fileContent = new StreamContent(stream);
+            fileContent.Headers.ContentType = new MediaTypeHeaderValue(archivo.ContentType);
+
+            content.Add(fileContent, "file", archivo.Name);
+
+            Http.DefaultRequestHeaders.Authorization = string.IsNullOrWhiteSpace(token)
+                ? null
+                : new AuthenticationHeaderValue("Bearer", token);
+
+            var resp = await Http.PostAsync("api/Producto/SubirImagen", content);
+
+            if (!resp.IsSuccessStatusCode)
+            {
+                Mensaje = $"No se pudo subir imagen. ({(int)resp.StatusCode})";
+                return;
+            }
+
+            var url = await resp.Content.ReadAsStringAsync();
+            Producto.ImagenUrl = url.Trim().Trim('"');
+        }
+        catch (Exception ex)
+        {
+            Mensaje = ex.Message;
+        }
+        finally
+        {
+            subiendoImagen = false;
+        }
+    }
+
+    private async Task Guardar()
+    {
+        Mensaje = null;
+
+        if (Producto.CategoriaProductoId <= 0)
+        {
+            Mensaje = "Seleccione una categoría.";
+            return;
+        }
+
+        guardando = true;
+        try
+        {
+            var resp = await http.Post("api/Producto", Producto);
+            if (resp.Error)
+            {
+                Mensaje = await resp.ObtenerError();
+                return;
+            }
+
+            nav.NavigateTo("/admin/productos");
+        }
+        finally
+        {
+            guardando = false;
+        }
+    }
+}

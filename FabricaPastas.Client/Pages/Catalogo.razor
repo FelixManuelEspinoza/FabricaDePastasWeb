@@ -1,0 +1,46 @@
+﻿@page "/Catalogo"
+@inject NavigationManager navigationManager
+@*
+    Página “Catálogo” simple:
+    - Da accesos a “Lista de productos” y “Promociones”.
+    - Usa NavigationManager para navegar sin recargar.
+*@
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-body text-center">
+                    <h1 class="card-title mb-4">📦 Catálogo de Productos</h1>
+
+                    @* Botonera central *@
+                    <div class="d-grid gap-3 col-10 mx-auto">
+
+                        @* Navegación interna a la lista de productos *@
+                        <button class="btn btn-primary" @onclick="ListaProducto">
+                            <i class="bi bi-box-seam me-2"></i> Ver productos
+                        </button>
+
+                        @* Link directo (anchor) a la lista de promociones *@
+                        <a class="btn btn-success" href="/api/Promocion/Lista">
+                            <i class="bi bi-tags me-2"></i> Ver promociones
+                        </a>
+
+                        @* Volver al inicio *@
+                        <button class="btn btn-outline-danger" @onclick="Cancelar">
+                            <i class="bi bi-x-circle me-2"></i> Volver al inicio
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    // Navega a la lista de productos (ruta del Client)
+    private void ListaProducto() => navigationManager.NavigateTo("/api/Producto/Lista");
+
+    // Vuelve a Home
+    private void Cancelar() => navigationManager.NavigateTo("/");
+}

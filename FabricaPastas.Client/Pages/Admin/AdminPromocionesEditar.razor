@@ -1,0 +1,310 @@
+﻿@page "/admin/promociones/editar/{Id:int}"
+@layout FabricaPastas.Client.Layout.AdminLayout
+
+@inject FabricaPastas.Client.Servicios.IHTTPServicio http
+@inject NavigationManager nav
+
+@using FabricaPastas.BD.Data.Entity
+@using FabricaPastas.Shared.DTO
+@using Microsoft.AspNetCore.Components.Forms
+
+<h3 class="mb-3">✏️ Editar Promoción</h3>
+
+@if (!string.IsNullOrWhiteSpace(Mensaje))
+{
+    <div class="alert alert-danger">@Mensaje</div>
+}
+
+@if (Promo == null)
+{
+    <div class="alert alert-secondary">🔄 Cargando...</div>
+}
+else
+{
+    <div class="card shadow-sm p-3 rounded-4 mb-4">
+        <div class="mb-3">
+            <label class="form-label">Título</label>
+            <input class="form-control" @bind="dto.Titulo" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Descripción</label>
+            <textarea class="form-control" rows="2" @bind="dto.Descripcion"></textarea>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Fecha inicio</label>
+                <InputDate TValue="DateTime?" class="form-control" @bind-Value="fechaInicio" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Fecha fin</label>
+                <InputDate TValue="DateTime?" class="form-control" @bind-Value="fechaFin" />
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" @bind="dto.Activa" />
+                    <label class="form-check-label">Activa</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-3 d-flex gap-2">
+            <button class="btn btn-primary" @onclick="GuardarPromo">Guardar</button>
+            <button class="btn btn-outline-secondary" @onclick="@(() => nav.NavigateTo("/admin/promociones"))">
+                Volver
+            </button>
+        </div>
+    </div>
+
+    <div class="card shadow-sm p-3 rounded-4">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+            <h5 class="mb-0">📊 Rangos por cantidad de pedidos</h5>
+            <small class="text-muted">Se aplica el mayor % que coincida</small>
+        </div>
+
+        <div class="row g-2 mb-3">
+
+            <div class="col-md-3">
+                <label class="form-label">Tipo cliente</label>
+                <select class="form-select" @bind="tipoClienteSeleccion">
+                    <option value="">Todos</option>
+                    @foreach (var tc in (TiposCliente ?? new()))
+                    {
+                        <option value="@tc.Id">@tc.Descripcion</option>
+                    }
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label">Min pedidos</label>
+                <input type="number" class="form-control" @bind="nuevo.MinPedidos" />
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label">Max pedidos</label>
+                <input type="number" class="form-control" @bind="maxPedidosStr" />
+                <small class="text-muted">Vacío = sin tope</small>
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label">% Desc.</label>
+                <input type="number" step="0.01" class="form-control" @bind="nuevo.Descuento_Porcentaje" />
+            </div>
+
+            <div class="col-md-3 d-flex align-items-end">
+                <button class="btn btn-success w-100" @onclick="AgregarRango">
+                    ➕ Agregar rango
+                </button>
+            </div>
+        </div>
+
+        @if (Rangos == null)
+        {
+            <div class="alert alert-secondary">Cargando rangos...</div>
+        }
+        else if (Rangos.Count == 0)
+        {
+            <div class="alert alert-warning">No hay rangos definidos.</div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover align-middle">
+                    <thead class="table-light text-center">
+                        <tr>
+                            <th>Tipo</th>
+                            <th>Min</th>
+                            <th>Max</th>
+                            <th>%</th>
+                            <th style="width:120px;">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var r in Rangos.OrderBy(x => x.MinPedidos))
+                        {
+                            <tr>
+                                <td class="text-center">@(r.Tipo_Cliente?.Descripcion ?? "Todos")</td>
+                                <td class="text-center">@r.MinPedidos</td>
+                                <td class="text-center">@(r.MaxPedidos.HasValue? r.MaxPedidos.Value.ToString() : "∞")</td>
+                                <td class="text-center">@r.Descuento_Porcentaje</td>
+                                <td class="text-center">
+                                    <button class="btn btn-sm btn-outline-danger" @onclick="@(() => BorrarRango(r.Id))">
+                                        🗑️
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private Promocion? Promo;
+    private CrearPromocionDTO dto = new() { Activa = true };
+
+    // ✅ UI usa DateTime? (se bindea perfecto con InputDate)
+    private DateTime? fechaInicio = null;
+    private DateTime? fechaFin = null;
+
+    private List<Promocion_Rango>? Rangos;
+    private List<Tipo_Cliente>? TiposCliente;
+
+    private string? Mensaje;
+
+    // UI intermediarios (evitan errores de bind)
+    private string tipoClienteSeleccion = ""; // "" => Todos
+    private string maxPedidosStr = "";        // "" => null
+
+    private CrearPromocion_RangoDTO nuevo = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Leer();
+    }
+
+    private async Task Leer()
+    {
+        Mensaje = null;
+
+        var respPromo = await http.Get<Promocion>($"api/Promocion/{Id}");
+        if (respPromo.Error)
+        {
+            Mensaje = await respPromo.ObtenerError();
+            return;
+        }
+
+        Promo = respPromo.Respuesta;
+
+        dto.Titulo = Promo?.Titulo;
+        dto.Descripcion = Promo?.Descripcion;
+        dto.Activa = Promo?.Activa ?? true;
+
+        // ✅ DateOnly -> DateTime para UI
+        if (Promo != null)
+        {
+            fechaInicio = Promo.Fecha_Inicio.ToDateTime(TimeOnly.MinValue);
+            fechaFin = Promo.Fecha_Fin.ToDateTime(TimeOnly.MinValue);
+        }
+
+        var respTC = await http.Get<List<Tipo_Cliente>>("api/Tipo_Cliente");
+        TiposCliente = respTC.Error ? new() : (respTC.Respuesta ?? new());
+
+        await LeerRangos();
+
+        nuevo = new CrearPromocion_RangoDTO
+        {
+            Promocion_Id = Id,
+            MinPedidos = 0,
+            MaxPedidos = null,
+            Descuento_Porcentaje = 0
+        };
+
+        tipoClienteSeleccion = "";
+        maxPedidosStr = "";
+    }
+
+    private async Task LeerRangos()
+    {
+        var respR = await http.Get<List<Promocion_Rango>>($"api/Promocion_Rango/PorPromocion/{Id}");
+        Rangos = respR.Error ? new() : (respR.Respuesta ?? new());
+    }
+
+    private async Task GuardarPromo()
+    {
+        Mensaje = null;
+
+        if (fechaInicio == null || fechaFin == null)
+        {
+            Mensaje = "Fechas inválidas.";
+            return;
+        }
+
+        if (fechaFin.Value.Date < fechaInicio.Value.Date)
+        {
+            Mensaje = "La fecha fin no puede ser menor que la fecha inicio.";
+            return;
+        }
+
+        // ✅ DateTime -> DateOnly (DTO)
+        dto.Fecha_Inicio = DateOnly.FromDateTime(fechaInicio.Value);
+        dto.Fecha_Fin = DateOnly.FromDateTime(fechaFin.Value);
+
+        var resp = await http.Put("api/Promocion/" + Id, dto);
+        if (resp.Error)
+        {
+            Mensaje = await resp.ObtenerError();
+            return;
+        }
+
+        await Leer();
+    }
+
+    private async Task AgregarRango()
+    {
+        Mensaje = null;
+
+        nuevo.Promocion_Id = Id;
+
+        // Tipo cliente: "" => null
+        if (string.IsNullOrWhiteSpace(tipoClienteSeleccion))
+            nuevo.Tipo_Cliente_Id = null;
+        else if (int.TryParse(tipoClienteSeleccion, out var tcId))
+            nuevo.Tipo_Cliente_Id = tcId;
+        else
+        {
+            Mensaje = "Tipo cliente inválido.";
+            return;
+        }
+
+        // Max pedidos: "" => null
+        if (string.IsNullOrWhiteSpace(maxPedidosStr))
+            nuevo.MaxPedidos = null;
+        else if (int.TryParse(maxPedidosStr, out var max))
+            nuevo.MaxPedidos = max;
+        else
+        {
+            Mensaje = "Max pedidos inválido.";
+            return;
+        }
+
+        if (nuevo.MaxPedidos.HasValue && nuevo.MaxPedidos.Value < nuevo.MinPedidos)
+        {
+            Mensaje = "MaxPedidos no puede ser menor que MinPedidos.";
+            return;
+        }
+
+        var resp = await http.Post<CrearPromocion_RangoDTO, int>("api/Promocion_Rango", nuevo);
+        if (resp.Error)
+        {
+            Mensaje = await resp.ObtenerError();
+            return;
+        }
+
+        await LeerRangos();
+
+        // reset UI
+        nuevo.MinPedidos = 0;
+        nuevo.MaxPedidos = null;
+        nuevo.Descuento_Porcentaje = 0;
+        nuevo.Tipo_Cliente_Id = null;
+
+        tipoClienteSeleccion = "";
+        maxPedidosStr = "";
+    }
+
+    private async Task BorrarRango(int idRango)
+    {
+        Mensaje = null;
+        var resp = await http.Delete($"api/Promocion_Rango/{idRango}");
+        if (resp.Error)
+            Mensaje = await resp.ObtenerError();
+        else
+            await LeerRangos();
+    }
+}

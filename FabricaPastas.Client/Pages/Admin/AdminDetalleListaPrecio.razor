@@ -1,0 +1,298 @@
+﻿@page "/admin/detalle-lista-precio"
+@layout FabricaPastas.Client.Layout.AdminLayout
+
+@inject IHTTPServicio http
+
+<h3 class="mb-2">🏷️ Detalle Lista de Precio</h3>
+<p class="text-muted">Precio por producto según lista (Mayorista / Minorista).</p>
+
+@if (!string.IsNullOrWhiteSpace(Mensaje))
+{
+    <div class="alert alert-danger">@Mensaje</div>
+}
+
+<div class="card shadow-sm rounded-4 mb-3">
+    <div class="card-body">
+        <div class="row g-2 align-items-end">
+
+            <div class="col-md-4">
+                <label class="form-label">Lista</label>
+                <select class="form-select" @bind="FiltroListaId">
+                    <option value="0">Todas</option>
+                    @if (Listas != null)
+                    {
+                        @foreach (var l in Listas)
+                        {
+                            <option value="@l.Id">@l.Tipo</option>
+                        }
+                    }
+                </select>
+            </div>
+
+            <div class="col-md-5">
+                <label class="form-label">Buscar producto</label>
+                <input class="form-control" @bind="FiltroProducto" @bind:event="oninput" placeholder="Ej: Ravioles..." />
+            </div>
+
+            <div class="col-md-3 d-flex gap-2">
+                <button class="btn btn-outline-secondary w-100" @onclick="Leer">🔄 Recargar</button>
+                <button class="btn btn-primary w-100" @onclick="AbrirCrear">➕ Agregar</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@if (Cargando)
+{
+    <div class="alert alert-secondary">🔄 Cargando...</div>
+}
+else if (DetallesFiltrados.Count == 0)
+{
+    <div class="alert alert-warning">⚠️ No hay detalles cargados con esos filtros.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle">
+            <thead class="table-light text-center">
+                <tr>
+                    <th>Lista</th>
+                    <th>Producto</th>
+                    <th style="width: 180px;">Precio</th>
+                    <th style="width: 240px;">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var d in DetallesFiltrados)
+                {
+                    <tr>
+                        <td class="text-center">@d.Lista_Precio?.Tipo</td>
+                        <td>@d.Producto?.Nombre</td>
+                        <td class="text-end">
+                            @if (EditandoId == d.Id)
+                            {
+                                <input class="form-control text-end" type="number" step="0.01" @bind="PrecioEdit" />
+                            }
+                            else
+                            {
+                                @d.Precio.ToString("N2")
+                            }
+                        </td>
+                        <td class="text-center">
+                            @if (EditandoId == d.Id)
+                            {
+                                <button class="btn btn-sm btn-success me-1" @onclick="@(() => GuardarPrecio(d.Id))">💾 Guardar</button>
+                                <button class="btn btn-sm btn-outline-secondary" @onclick="CancelarEdicion">Cancelar</button>
+                            }
+                            else
+                            {
+                                <button class="btn btn-sm btn-outline-primary me-1" @onclick="@(() => Editar(d))">✏️ Editar</button>
+                                <button class="btn btn-sm btn-outline-danger" @onclick="@(() => Borrar(d.Id))">🗑️ Borrar</button>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@if (MostrarCrear)
+{
+    <div class="card shadow-sm rounded-4 mt-3">
+        <div class="card-body">
+            <h5 class="mb-3">➕ Agregar detalle</h5>
+
+            <div class="row g-2">
+                <div class="col-md-4">
+                    <label class="form-label">Lista</label>
+                    <select class="form-select" @bind="NuevoListaId">
+                        <option value="0">-- Seleccionar --</option>
+                        @foreach (var l in (Listas ?? new()))
+                        {
+                            <option value="@l.Id">@l.Tipo</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-5">
+                    <label class="form-label">Producto</label>
+                    <select class="form-select" @bind="NuevoProductoId">
+                        <option value="0">-- Seleccionar --</option>
+                        @foreach (var p in (Productos ?? new()))
+                        {
+                            <option value="@p.Id">@p.Nombre</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Precio</label>
+                    <input class="form-control text-end" type="number" step="0.01" @bind="NuevoPrecio" />
+                </div>
+            </div>
+
+            <div class="d-flex gap-2 mt-3">
+                <button class="btn btn-primary" @onclick="Crear">Crear</button>
+                <button class="btn btn-outline-secondary" @onclick="CerrarCrear">Cancelar</button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    // Data
+    private List<FabricaPastas.BD.Data.Entity.Detalle_Lista_Precio> Detalles = new();
+    private List<FabricaPastas.BD.Data.Entity.Lista_Precio>? Listas;
+    private List<FabricaPastas.BD.Data.Entity.Producto>? Productos;
+
+    // UI
+    private bool Cargando;
+    private string? Mensaje;
+
+    // Filtros
+    private int FiltroListaId = 0;
+    private string? FiltroProducto;
+
+    // Edit
+    private int EditandoId = 0;
+    private decimal PrecioEdit;
+
+    // Crear
+    private bool MostrarCrear = false;
+    private int NuevoListaId = 0;
+    private int NuevoProductoId = 0;
+    private decimal NuevoPrecio = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Leer();
+    }
+
+    private async Task Leer()
+    {
+        Mensaje = null;
+        Cargando = true;
+        try
+        {
+            var respListas = await http.Get<List<FabricaPastas.BD.Data.Entity.Lista_Precio>>("api/Lista_Precio");
+            Listas = respListas.Error ? new() : (respListas.Respuesta ?? new());
+
+            var respProd = await http.Get<List<FabricaPastas.BD.Data.Entity.Producto>>("api/Producto");
+            Productos = respProd.Error ? new() : (respProd.Respuesta ?? new());
+
+            var respDet = await http.Get<List<FabricaPastas.BD.Data.Entity.Detalle_Lista_Precio>>("api/Detalle_Lista_Precio");
+            if (respDet.Error)
+            {
+                Mensaje = await respDet.ObtenerError();
+                Detalles = new();
+            }
+            else
+            {
+                Detalles = respDet.Respuesta ?? new();
+            }
+        }
+        finally
+        {
+            Cargando = false;
+        }
+    }
+
+    private List<FabricaPastas.BD.Data.Entity.Detalle_Lista_Precio> DetallesFiltrados =>
+        Detalles
+            .Where(d => FiltroListaId == 0 || d.Lista_Precio_Id == FiltroListaId)
+            .Where(d => string.IsNullOrWhiteSpace(FiltroProducto) ||
+                        (d.Producto?.Nombre?.Contains(FiltroProducto, StringComparison.OrdinalIgnoreCase) ?? false))
+            .OrderBy(d => d.Lista_Precio?.Tipo)
+            .ThenBy(d => d.Producto?.Nombre)
+            .ToList();
+
+    private void Editar(FabricaPastas.BD.Data.Entity.Detalle_Lista_Precio d)
+    {
+        EditandoId = d.Id;
+        PrecioEdit = d.Precio;
+    }
+
+    private void CancelarEdicion()
+    {
+        EditandoId = 0;
+        PrecioEdit = 0;
+    }
+
+    private async Task GuardarPrecio(int id)
+    {
+        Mensaje = null;
+        var resp = await http.Put($"api/Detalle_Lista_Precio/{id}", PrecioEdit);
+
+        if (resp.Error)
+        {
+            Mensaje = await resp.ObtenerError();
+            return;
+        }
+
+        var item = Detalles.FirstOrDefault(x => x.Id == id);
+        if (item != null) item.Precio = PrecioEdit;
+
+        CancelarEdicion();
+    }
+
+    private async Task Borrar(int id)
+    {
+        Mensaje = null;
+        var resp = await http.Delete($"api/Detalle_Lista_Precio/{id}");
+        if (resp.Error)
+        {
+            Mensaje = await resp.ObtenerError();
+            return;
+        }
+
+        Detalles.RemoveAll(x => x.Id == id);
+    }
+
+    private void AbrirCrear()
+    {
+        MostrarCrear = true;
+        NuevoListaId = 0;
+        NuevoProductoId = 0;
+        NuevoPrecio = 0;
+    }
+
+    private void CerrarCrear()
+    {
+        MostrarCrear = false;
+    }
+
+    private async Task Crear()
+    {
+        Mensaje = null;
+
+        if (NuevoListaId <= 0 || NuevoProductoId <= 0)
+        {
+            Mensaje = "Seleccione lista y producto.";
+            return;
+        }
+        if (NuevoPrecio <= 0)
+        {
+            Mensaje = "Ingrese un precio válido.";
+            return;
+        }
+
+        var dto = new FabricaPastas.Shared.DTO.CrearDetalle_Lista_PrecioDTO
+        {
+            Lista_Precio_Id = NuevoListaId,
+            Producto_Id = NuevoProductoId,
+            Precio = NuevoPrecio
+        };
+
+        var resp = await http.Post("api/Detalle_Lista_Precio", dto);
+        if (resp.Error)
+        {
+            Mensaje = await resp.ObtenerError();
+            return;
+        }
+
+        MostrarCrear = false;
+        await Leer();
+    }
+}

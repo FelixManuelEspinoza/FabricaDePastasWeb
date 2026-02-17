@@ -1,0 +1,72 @@
+﻿@* 
+    TopNavMenu (MENÚ REAL dentro de la página)
+    - Se renderiza dentro de MainLayout en la sección .top-row
+    - NO es fixed-top, NO altera el sidebar
+    - Requiere Bootstrap Icons (ya los tenés)
+    - El colapsable (hamburguesa) requiere bootstrap.bundle.js (ya lo agregamos)
+*@
+
+<nav class="navbar navbar-expand-lg navbar-light w-100 p-0">
+    <div class="container-fluid p-0">
+
+        @* Marca/Nombre (podés cambiarlo) *@
+        <a class="navbar-brand d-flex align-items-center gap-2 m-0" href="/">
+            <span>🍝</span>
+            <span class="brand-text">La Nonna</span>
+        </a>
+
+        @* Botón hamburguesa para pantallas chicas *@
+        <button class="navbar-toggler" type="button"
+                data-bs-toggle="collapse" data-bs-target="#realTopNav"
+                aria-controls="realTopNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        @* Links del menú real *@
+        <div class="collapse navbar-collapse" id="realTopNav">
+            <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
+
+                <li class="nav-item">
+                    <NavLink class="nav-link" href="/" Match="NavLinkMatch.All">
+                        <i class="bi bi-house-door-fill me-2"></i>Inicio
+                    </NavLink>
+                </li>
+
+                <li class="nav-item">
+                    @* Ajustá la ruta si tu login es otra *@
+                    <NavLink class="nav-link" href="/LoginUsuarios" Match="NavLinkMatch.All">
+                        <i class="bi bi-box-arrow-in-right me-2"></i>Iniciar sesión
+                    </NavLink>
+                </li>
+
+                <li class="nav-item">
+                    <NavLink class="nav-link" href="/Nosotros" Match="NavLinkMatch.All">
+                        <i class="bi bi-people-fill me-2"></i>Nosotros
+                    </NavLink>
+                </li>
+
+                <li class="nav-item">
+                    <NavLink class="nav-link" href="/preguntas-frecuentes" Match="NavLinkMatch.All">
+                        <i class="bi bi-question-circle-fill me-2"></i>FAQ
+                    </NavLink>
+                </li>
+
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<style>
+    .brand-text {
+        color: #ff2f2f;
+        font-weight: 800;
+        letter-spacing: 0.2px;
+    }
+
+    /* Marca el link activo */
+    .nav-link.active {
+        font-weight: 700;
+        text-decoration: underline;
+        text-underline-offset: 6px;
+    }
+</style>

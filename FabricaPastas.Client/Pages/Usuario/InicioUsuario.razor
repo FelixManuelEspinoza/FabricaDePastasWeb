@@ -1,0 +1,123 @@
+﻿@page "/InicioUsuario"
+@inject IJSRuntime JSRuntime
+@inject NavigationManager navigationManager
+
+<!-- 🔹 Navbar superior para usuario -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm mb-4">
+    <div class="container-fluid">
+
+        <a class="navbar-brand fw-bold text-danger" href="/">🍝 La Nonna</a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarNonna"
+                aria-controls="navbarNonna"
+                aria-expanded="false"
+                aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse justify-content-center" id="navbarNonna">
+            <ul class="navbar-nav gap-3">
+
+                <li class="nav-item">
+                    <a class="nav-link active d-flex align-items-center gap-2 text-primary fw-bold" href="/InicioUsuario">
+                        <i class="bi bi-house-door-fill"></i>Inicio
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-2 text-info fw-semibold" href="/Nosotros">
+                        <i class="bi bi-people-fill"></i>Nosotros
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-2 text-warning fw-semibold" href="/preguntas-frecuentes">
+                        <i class="bi bi-question-circle-fill"></i>FAQ
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-2 text-danger fw-semibold" href="#" @onclick="CerrarSesion">
+                        <i class="bi bi-box-arrow-right"></i>Salir
+                    </a>
+                </li>
+
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- 🔹 Contenido principal -->
+<div class="hero d-flex flex-column justify-content-center align-items-center text-center text-white">
+    <h1 class="display-4 fw-bold mb-3">
+        👋 ¡Bienvenido, <span class="text-warning">@NombreUsuario</span>!
+    </h1>
+
+    <p class="lead mb-4">
+        Nos alegra verte nuevamente en <strong>La Nonna Pastas</strong>.
+        Accedé al catálogo y descubrí los productos disponibles.
+    </p>
+
+    <div class="d-flex flex-column align-items-center gap-3">
+        <a class="btn btn-outline-light d-flex align-items-center gap-2 fw-semibold shadow-sm"
+           href="/catalogo-usuario">
+            <i class="bi bi-shop fs-5"></i>
+            Ir al catálogo
+        </a>
+
+        <a class="btn btn-outline-light d-flex align-items-center gap-2 fw-semibold shadow-sm"
+           href="/api/Promocion/ListaUsuarios">
+            <i class="bi bi-stars fs-5"></i>
+            Ver promociones
+        </a>
+    </div>
+</div>
+
+<!-- 🔹 Estilos personalizados (embebidos, manteniendo tu arquitectura) -->
+<style>
+    body {
+        background: url('/images/width_550.png') no-repeat center center fixed;
+        background-size: cover;
+        backdrop-filter: brightness(0.8);
+    }
+
+    .hero {
+        min-height: 70vh;
+        background: rgba(0, 0, 0, 0.55);
+        padding: 3rem;
+        border-radius: 1rem;
+        margin: 2rem;
+        box-shadow: 0 0 25px rgba(0, 0, 0, 0.4);
+    }
+
+    .card {
+        background-color: rgba(255, 255, 255, 0.9);
+    }
+
+    a.btn:hover {
+        transform: scale(1.05);
+        transition: all 0.2s ease-in-out;
+    }
+</style>
+
+@code {
+    private string NombreUsuario = "Usuario";
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Obtener nombre desde el localStorage
+        var almacenado = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "usuarioNombre");
+
+        if (!string.IsNullOrEmpty(almacenado))
+        {
+            NombreUsuario = almacenado;
+        }
+    }
+
+    private async Task CerrarSesion()
+    {
+        await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "usuarioNombre");
+        navigationManager.NavigateTo("/LoginUsuarios");
+    }
+}

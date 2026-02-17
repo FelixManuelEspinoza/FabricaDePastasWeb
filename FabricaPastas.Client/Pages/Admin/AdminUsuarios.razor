@@ -1,0 +1,261 @@
+﻿@page "/admin/usuarios"
+@layout FabricaPastas.Client.Layout.AdminLayout
+
+@inject IHTTPServicio http
+@inject NavigationManager navigationManager
+
+@using FabricaPastas.BD.Data.Entity
+
+<div class="container my-5">
+    <div class="text-center mb-4">
+        <h1 class="display-6 fw-bold text-primary">
+            👥 Lista de usuarios registrados
+        </h1>
+        <p class="text-muted">
+            Buscá por nombre, usuario o teléfono y filtrá por tipo de cliente
+        </p>
+    </div>
+
+    <!-- FILTROS -->
+    <div class="card shadow-sm border-start border-4 border-primary mb-4">
+        <div class="card-body">
+            <div class="row g-3 align-items-end">
+
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">🔎 Búsqueda</label>
+                    <input class="form-control"
+                           placeholder="Ej: Tomas / admin / 123456789"
+                           @bind="busqueda"
+                           @bind:event="oninput" />
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">🏷️ Tipo cliente</label>
+                    <select class="form-select" @bind="filtroTipoCliente">
+                        <option value="Todos">Todos</option>
+                        <option value="Minoristas">Minoristas</option>
+                        <option value="Mayoristas">Mayoristas</option>
+                    </select>
+                </div>
+
+                <div class="col-md-3 d-flex gap-2">
+                    <button class="btn btn-outline-secondary w-100" @onclick="LimpiarFiltros">
+                        Limpiar
+                    </button>
+                    <button class="btn btn-outline-primary w-100" @onclick="Leer">
+                        🔄 Recargar
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(Mensaje))
+    {
+        <div class="alert alert-danger text-center shadow-sm">
+            ❌ Error: @Mensaje
+        </div>
+    }
+    else if (ListaUsuarios == null)
+    {
+        <div class="alert alert-secondary text-center shadow-sm">
+            🔄 Buscando usuarios...
+        </div>
+    }
+    else if (!UsuariosFiltrados.Any())
+    {
+        <div class="alert alert-warning text-center shadow-sm">
+            ⚠️ No hay usuarios que coincidan con el filtro/búsqueda.
+        </div>
+    }
+    else
+    {
+        <div class="card shadow-sm border-start border-4 border-success">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+                    <h5 class="card-title fw-semibold text-success mb-0">📋 Usuarios</h5>
+                    <span class="badge bg-dark">Mostrando: @UsuariosFiltrados.Count()</span>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover align-middle">
+                        <thead class="table-light text-center">
+                            <tr>
+                                <th>🧑 Nombre</th>
+                                <th>👤 Apellido</th>
+                                <th>👤 Usuario</th>
+                                <th>📧 Email</th>
+                                <th>🏷️ Tipo Cliente</th>
+                                <th>📞 Teléfono</th>
+                                <th style="width: 140px;">🛠️ Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in UsuariosFiltrados)
+                            {
+                                var tipo = item.Tipo_Cliente?.Descripcion ?? "-";
+                                var esMayorista = tipo.ToLower().Contains("mayor");
+
+                                <tr>
+                                    <td>@item.Nombre</td>
+                                    <td>@item.Apellido</td>
+                                    <td>@item.NombreUsuario</td>
+                                    <td>@item.Email</td>
+                                    <td class="text-center">
+                                        <span class="badge @(esMayorista ? "bg-warning text-dark" : "bg-info")">
+                                            @tipo
+                                        </span>
+                                    </td>
+                                    <td>@item.Telefono</td>
+                                    <td class="text-center">
+                                        <button class="btn btn-danger btn-sm"
+                                                @onclick="() => ConfirmarEliminar(item)">
+                                            🗑️ Borrar
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<Confirmacion @ref="confirmacion"
+              Titulo="⚠️ Alerta"
+              textCancelar="Cancelar"
+              textOk="Eliminar"
+              onCancel="@Cancelar"
+              onConfirm="@EliminarConfirmado">
+    <h5 class="text-danger text-center">
+        Está por eliminar un usuario. ¿Desea continuar?
+    </h5>
+</Confirmacion>
+
+@code {
+    private Confirmacion? confirmacion;
+
+    private List<Usuario>? ListaUsuarios;
+    private string? Mensaje;
+
+    private Usuario? usuarioBorrar = null;
+
+    // Filtros
+    private string busqueda = "";
+    private string filtroTipoCliente = "Todos";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Leer();
+    }
+
+    // ======================
+    // Leer usuarios
+    // ======================
+    private async Task Leer()
+    {
+        Mensaje = null;
+        ListaUsuarios = null;
+
+        var resp = await http.Get<List<Usuario>>("api/Usuario");
+
+        if (!resp.Error)
+        {
+            ListaUsuarios = resp.Respuesta ?? new List<Usuario>();
+        }
+        else
+        {
+            Mensaje = await resp.ObtenerError();
+        }
+    }
+
+    // ======================
+    // Lista filtrada
+    // ======================
+    private IEnumerable<Usuario> UsuariosFiltrados
+    {
+        get
+        {
+            if (ListaUsuarios == null) return Enumerable.Empty<Usuario>();
+
+            IEnumerable<Usuario> query = ListaUsuarios;
+
+            // Filtro tipo cliente
+            if (filtroTipoCliente != "Todos")
+            {
+                query = query.Where(u =>
+                    (u.Tipo_Cliente?.Descripcion ?? "")
+                        .Equals(filtroTipoCliente, StringComparison.OrdinalIgnoreCase));
+            }
+
+            // Búsqueda (nombre, apellido, usuario, teléfono)
+            if (!string.IsNullOrWhiteSpace(busqueda))
+            {
+                var b = busqueda.Trim();
+
+                string NormalizarTel(string? s)
+                    => new string((s ?? "").Where(char.IsDigit).ToArray());
+
+                var bTel = NormalizarTel(b);
+
+                query = query.Where(u =>
+                    (u.Nombre ?? "").Contains(b, StringComparison.OrdinalIgnoreCase) ||
+                    (u.Apellido ?? "").Contains(b, StringComparison.OrdinalIgnoreCase) ||
+                    (u.NombreUsuario ?? "").Contains(b, StringComparison.OrdinalIgnoreCase) ||
+                    (u.Telefono ?? "").Contains(b, StringComparison.OrdinalIgnoreCase) ||
+                    (!string.IsNullOrWhiteSpace(bTel) && NormalizarTel(u.Telefono).Contains(bTel))
+                );
+            }
+
+            return query;
+        }
+    }
+
+    private void LimpiarFiltros()
+    {
+        busqueda = "";
+        filtroTipoCliente = "Todos";
+    }
+
+    // ======================
+    // Eliminación
+    // ======================
+    private void ConfirmarEliminar(Usuario usuario)
+    {
+        usuarioBorrar = usuario;
+        confirmacion?.Ver();
+    }
+
+    private void Cancelar()
+    {
+        confirmacion?.Ocultar();
+        usuarioBorrar = null;
+    }
+
+    private async Task EliminarConfirmado()
+    {
+        if (usuarioBorrar == null)
+        {
+            confirmacion?.Ocultar();
+            return;
+        }
+
+        var respuesta = await http.Delete($"api/Usuario/{usuarioBorrar.Id}");
+
+        if (respuesta.Error)
+        {
+            Mensaje = "No se pudo borrar el usuario";
+        }
+        else
+        {
+            await Leer();
+        }
+
+        usuarioBorrar = null;
+        confirmacion?.Ocultar();
+    }
+}

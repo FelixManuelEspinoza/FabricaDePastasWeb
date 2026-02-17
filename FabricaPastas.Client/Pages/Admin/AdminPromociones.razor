@@ -1,0 +1,116 @@
+﻿@page "/admin/promociones"
+@layout FabricaPastas.Client.Layout.AdminLayout
+
+@inject FabricaPastas.Client.Servicios.IHTTPServicio http
+@inject NavigationManager nav
+
+@using FabricaPastas.BD.Data.Entity
+
+<div class="container my-4">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+        <div>
+            <h3 class="mb-0">⭐ Promociones</h3>
+            <small class="text-muted">Promos por cantidad de pedidos (rangos)</small>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-primary" @onclick="@(() => nav.NavigateTo("/admin/promociones/crear"))">
+                ➕ Crear
+            </button>
+            <button class="btn btn-outline-secondary" @onclick="@Leer">
+                🔄 Recargar
+            </button>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(Mensaje))
+    {
+        <div class="alert alert-danger">@Mensaje</div>
+    }
+
+    @if (Promos == null)
+    {
+        <div class="alert alert-secondary">🔄 Cargando...</div>
+    }
+    else if (Promos.Count == 0)
+    {
+        <div class="alert alert-warning">⚠️ No hay promociones.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover align-middle">
+                <thead class="table-light text-center">
+                    <tr>
+                        <th style="width:80px;">ID</th>
+                        <th>Título</th>
+                        <th style="width:220px;">Vigencia</th>
+                        <th style="width:90px;">Activa</th>
+                        <th style="width:90px;">Rangos</th>
+                        <th style="width:210px;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in Promos.OrderByDescending(x => x.Id))
+                    {
+                        <tr>
+                            <td class="text-center">@p.Id</td>
+                            <td>@p.Titulo</td>
+                            <td class="text-center">
+                                @p.Fecha_Inicio.ToString("dd/MM/yyyy") - @p.Fecha_Fin.ToString("dd/MM/yyyy")
+                            </td>
+                            <td class="text-center">
+                                <span class="badge @(p.Activa ? "bg-success" : "bg-secondary")">
+                                    @(p.Activa ? "Sí" : "No")
+                                </span>
+                            </td>
+                            <td class="text-center">@((p.Rangos?.Count) ?? 0)</td>
+                            <td class="text-center">
+                                <button class="btn btn-sm btn-outline-primary me-1"
+                                        @onclick="@(() => nav.NavigateTo("/admin/promociones/editar/" + p.Id))">
+                                    ✏️ Editar
+                                </button>
+
+                                <button class="btn btn-sm btn-outline-danger"
+                                        @onclick="@(() => Borrar(p.Id))">
+                                    🗑️
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@code {
+    private List<Promocion>? Promos;
+    private string? Mensaje;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Leer();
+    }
+
+    private async Task Leer()
+    {
+        Mensaje = null;
+        Promos = null;
+
+        var resp = await http.Get<List<Promocion>>("api/Promocion");
+        if (!resp.Error)
+            Promos = resp.Respuesta ?? new();
+        else
+            Mensaje = await resp.ObtenerError();
+    }
+
+    private async Task Borrar(int id)
+    {
+        Mensaje = null;
+        var resp = await http.Delete($"api/Promocion/{id}");
+        if (resp.Error)
+            Mensaje = await resp.ObtenerError();
+        else
+            await Leer();
+    }
+}

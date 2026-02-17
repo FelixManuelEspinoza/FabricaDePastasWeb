@@ -1,0 +1,50 @@
+﻿@inherits LayoutComponentBase
+@inject IJSRuntime JSRuntime
+@inject NavigationManager Nav
+
+@if (cargando)
+{
+    <div class="p-4 text-center">
+        <div class="spinner-border" role="status"></div>
+        <div class="mt-2">Cargando administración...</div>
+    </div>
+}
+else
+{
+    <div class="page">
+        @* Sidebar del template (lo dejamos igual para no tocar la arquitectura) *@
+        <div class="sidebar">
+            <NavMenu />
+        </div>
+
+        <main>
+            <div class="top-row px-4">
+                <AdminNavMenu />
+            </div>
+
+            <article class="content px-4">
+                @Body
+            </article>
+        </main>
+    </div>
+}
+
+@code {
+    private bool cargando = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Seguridad UI (la real ya está en el server con JWT + Authorize)
+        var rol = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "usuarioRol");
+        var token = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "authToken");
+
+        if (string.IsNullOrWhiteSpace(token) ||
+            !string.Equals(rol, "Administrador", StringComparison.OrdinalIgnoreCase))
+        {
+            Nav.NavigateTo("/LoginUsuarios", true);
+            return;
+        }
+
+        cargando = false;
+    }
+}

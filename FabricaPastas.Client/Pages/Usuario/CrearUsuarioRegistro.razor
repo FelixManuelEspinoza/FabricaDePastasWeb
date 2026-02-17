@@ -1,0 +1,155 @@
+﻿@page "/api/Usuario/Registro/Crear"
+
+@inject FabricaPastas.Client.Servicios.IHTTPServicio http
+@inject NavigationManager navigationManager
+
+@* 
+    CrearUsuarioRegistro (adaptado del proyecto original)
+    - Usa CrearUsuarioDTO (Shared) con DataAnnotations.
+    - Llama al backend: POST /api/Usuario
+    - Si sale bien: muestra éxito y redirige a /LoginUsuarios
+*@
+
+<div class="container my-5">
+    <div class="text-center mb-4">
+        <h1 class="display-6 fw-bold text-primary">
+            📝 Registrate en nuestra web
+        </h1>
+        <p class="text-muted">Completá tus datos para crear tu cuenta y comenzar a operar en el sistema</p>
+    </div>
+
+    <EditForm Model="usuario" OnValidSubmit="Grabar">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <div class="card shadow-sm border-start border-4 border-primary">
+                    <div class="card-body">
+                        <div class="row g-4">
+
+                            <div class="col-md-6">
+                                <label for="nombre" class="form-label fw-semibold">Nombre</label>
+                                <InputText id="nombre" class="form-control" @bind-Value="usuario.Nombre" placeholder="Tu nombre" />
+                                <ValidationMessage For="@(() => usuario.Nombre)" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="apellido" class="form-label fw-semibold">Apellido</label>
+                                <InputText id="apellido" class="form-control" @bind-Value="usuario.Apellido" placeholder="Tu apellido" />
+                                <ValidationMessage For="@(() => usuario.Apellido)" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="email" class="form-label fw-semibold">E-mail</label>
+                                <InputText id="email" class="form-control" @bind-Value="usuario.Email" placeholder="correo@correo.com" />
+                                <ValidationMessage For="@(() => usuario.Email)" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="contraseña" class="form-label fw-semibold">Contraseña</label>
+                                <InputText id="contraseña" type="password" class="form-control" @bind-Value="usuario.Contraseña" placeholder="••••••••" />
+                                <ValidationMessage For="@(() => usuario.Contraseña)" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="nombreUsuario" class="form-label fw-semibold">Nombre de usuario</label>
+                                <InputText id="nombreUsuario" class="form-control" @bind-Value="usuario.NombreUsuario" placeholder="Tu nombre de usuario" />
+                                <ValidationMessage For="@(() => usuario.NombreUsuario)" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="telefono" class="form-label fw-semibold">Teléfono</label>
+                                <InputText id="telefono" class="form-control" @bind-Value="usuario.Teléfono" placeholder="N° Teléfono" />
+                                <ValidationMessage For="@(() => usuario.Teléfono)" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="direccion" class="form-label fw-semibold">Dirección</label>
+                                <InputText id="direccion" class="form-control" @bind-Value="usuario.Dirección" placeholder="Dirección" />
+                                <ValidationMessage For="@(() => usuario.Dirección)" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="cuitCuil" class="form-label fw-semibold">CUIT / CUIL</label>
+                                <InputText id="cuitCuil" class="form-control" @bind-Value="usuario.Cuit_Cuil" placeholder="Cuit / Cuil" />
+                                <ValidationMessage For="@(() => usuario.Cuit_Cuil)" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="tipoCliente" class="form-label fw-semibold">Tipo de cliente</label>
+
+                                <InputSelect id="tipoCliente" class="form-select" @bind-Value="usuario.TipoCliente">
+                                    <option value="Minoristas">Minorista</option>
+                                    <option value="Mayoristas">Mayorista</option>
+                                </InputSelect>
+
+                                <ValidationMessage For="@(() => usuario.TipoCliente)" />
+                            </div>
+
+
+                            <div class="col-12 text-center mt-4">
+                                <button class="btn btn-success me-2" type="submit" disabled="@cargando">
+                                    @if (cargando)
+                                    {
+                                        <span>Cargando...</span>
+                                    }
+                                    else
+                                    {
+                                        <span>✅ Registrar</span>
+                                    }
+                                </button>
+                            </div>
+
+                        </div>
+
+                        @if (!string.IsNullOrWhiteSpace(mensaje))
+                        {
+                            <div class="alert @(esError ? "alert-danger" : "alert-success") mt-4">
+                                @mensaje
+                            </div>
+                        }
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </EditForm>
+</div>
+
+@code {
+    private FabricaPastas.Shared.DTO.CrearUsuarioDTO usuario = new();
+
+    private bool cargando = false;
+    private string mensaje = string.Empty;
+    private bool esError = false;
+
+    private async Task Grabar()
+    {
+        mensaje = string.Empty;
+        esError = false;
+        cargando = true;
+
+        // El controlador devuelve int (Id creado)
+        var httpRespuesta = await http.Post<FabricaPastas.Shared.DTO.CrearUsuarioDTO, int>("/api/Usuario", usuario);
+
+        cargando = false;
+
+        if (httpRespuesta.Error)
+        {
+            esError = true;
+            mensaje = await httpRespuesta.ObtenerError();
+            if (string.IsNullOrWhiteSpace(mensaje))
+                mensaje = "No se pudo registrar. Revisá los datos o los valores base (Rol/Tipo_Cliente/Lista_Precio).";
+            return;
+        }
+
+        var idCreado = httpRespuesta.Respuesta;
+
+        mensaje = $"✅ Usuario creado correctamente (ID: {idCreado}). Ahora podés iniciar sesión.";
+        esError = false;
+
+        // Redirigir a login
+        navigationManager.NavigateTo("/LoginUsuarios");
+    }
+}

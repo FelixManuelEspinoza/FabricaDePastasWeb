@@ -1,0 +1,153 @@
+﻿@* 
+    NAVMENU (DEV / Inspector)
+    - Este menú es para navegar rápido por todas las páginas durante desarrollo/migración.
+    - IMPORTANTE: este componente YA NO se posiciona con "position-fixed".
+      El posicionamiento/scroll/ancho lo controla MainLayout.razor.css (app-devmenu).
+*@
+
+@* Bloque del template original (lo dejamos comentado) *@
+@* <div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">FabricaPastas.Client</a>
+        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </div>
+</div> *@
+
+@* 
+    Contenedor del menú:
+    - Antes: era position-fixed + vh-100 + width inline.
+    - Ahora: ES UN CONTENEDOR NORMAL.
+    - El layout lo envuelve en <aside class="app-devmenu"> y ahí se fija y scrollea.
+*@
+<div class="bg-light p-3" @onclick="ToggleNavMenu">
+
+    <nav class="nav flex-column">
+
+        @* ============================
+           GRUPO 1: PÁGINAS PÚBLICAS
+           ============================ *@
+
+        <div class="nav-item mb-2 bg-dark rounded">
+            <NavLink class="nav-link text-white fw-semibold" href="/" Match="NavLinkMatch.All">
+                <i class="bi bi-house-door-fill me-2"></i>Inicio
+            </NavLink>
+        </div>
+
+        <div class="nav-item mb-2 bg-warning rounded">
+            <NavLink class="nav-link text-dark fw-semibold" href="/Catalogo" Match="NavLinkMatch.All">
+                <i class="bi bi-basket-fill me-2"></i>Catálogo
+            </NavLink>
+        </div>
+
+        <div class="nav-item mb-2 bg-info rounded">
+            <NavLink class="nav-link text-white fw-semibold" href="/Nosotros" Match="NavLinkMatch.All">
+                <i class="bi bi-people-fill me-2"></i>Nosotros
+            </NavLink>
+        </div>
+
+        <div class="nav-item mb-3 bg-primary rounded">
+            <NavLink class="nav-link text-white fw-semibold" href="/preguntas-frecuentes" Match="NavLinkMatch.All">
+                <i class="bi bi-question-circle-fill me-2"></i>FAQ
+            </NavLink>
+        </div>
+
+        @* ============================
+           SECCIONES
+           ============================ *@
+
+        <div class="nav-item mb-2 bg-primary rounded">
+            <NavLink class="nav-link text-white fw-semibold" href="/SeccionUsuarios" Match="NavLinkMatch.All">
+                <i class="bi bi-box-arrow-in-right me-2"></i>Sección usuarios
+            </NavLink>
+        </div>
+
+        @* ============================
+           LINKS CRUD / PRUEBAS
+           ============================ *@
+
+        <div class="nav-item mb-2">
+            <NavLink class="nav-link text-dark fw-semibold" href="/api/Lista_Precio/Crear" Match="NavLinkMatch.All">
+                <i class="bi bi-cash-stack me-2"></i>Nueva Lista_precio
+            </NavLink>
+        </div>
+
+        <div class="nav-item mb-2">
+            <NavLink class="nav-link text-dark fw-semibold" href="/api/Lista_Precio/Lista" Match="NavLinkMatch.All">
+                <i class="bi bi-card-list me-2"></i>Lista_precio(L)
+            </NavLink>
+        </div>
+
+        <div class="nav-item mb-2">
+            <NavLink class="nav-link text-dark fw-semibold" href="/api/Detalle_Lista_Precio/Crear" Match="NavLinkMatch.All">
+                <i class="bi bi-file-earmark-plus me-2"></i>DetalleListaPrecio
+            </NavLink>
+        </div>
+
+        <div class="nav-item mb-2">
+            <NavLink class="nav-link text-dark fw-semibold" href="/api/Forma_Pago/Crear" Match="NavLinkMatch.All">
+                <i class="bi bi-credit-card me-2"></i>Forma_Pago/Crear
+            </NavLink>
+        </div>
+
+        <div class="nav-item mb-2">
+            <NavLink class="nav-link text-dark fw-semibold" href="/api/Forma_Pago/Lista" Match="NavLinkMatch.All">
+                <i class="bi bi-credit-card me-2"></i>Forma_Pago(L)
+            </NavLink>
+        </div>
+
+        <div class="nav-item mb-2">
+            <NavLink class="nav-link text-dark fw-semibold" href="/api/Estado_Pedido/Lista" Match="NavLinkMatch.All">
+                <i class="bi bi-clipboard-check me-2"></i>Estado_Pedido(L)
+            </NavLink>
+        </div>
+
+        <div class="nav-item mb-2">
+            <NavLink class="nav-link text-dark fw-semibold" href="/api/Detalle_Pedido/Crear" Match="NavLinkMatch.All">
+                <i class="bi bi-file-earmark-plus me-2"></i>Detalle_Pedido/Crear
+            </NavLink>
+        </div>
+
+        <div class="nav-item mb-2">
+            <NavLink class="nav-link text-dark fw-semibold" href="/api/Detalle_Pedido/Lista" Match="NavLinkMatch.All">
+                <i class="bi bi-card-list me-2"></i>Detalle_Pedido(L)
+            </NavLink>
+        </div>
+
+        <div class="nav-item mb-2">
+            <NavLink class="nav-link text-dark fw-semibold" href="/api/Categoria_Producto/Crear" Match="NavLinkMatch.All">
+                <i class="bi bi-tags-fill me-2"></i>Crear Categoria Prod
+            </NavLink>
+        </div>
+
+        <div class="nav-item mb-2">
+            <NavLink class="nav-link text-dark fw-semibold" href="/api/Categoria_Producto/Lista" Match="NavLinkMatch.All">
+                <i class="bi bi-card-list me-2"></i>Categoria producto (L)
+            </NavLink>
+        </div>
+
+        <div class="nav-item mb-2">
+            <NavLink class="nav-link text-dark fw-semibold" href="/catalogo-usuario" Match="NavLinkMatch.All">
+                <i class="bi bi-card-list me-2"></i>Catálogo Usuario
+            </NavLink>
+        </div>
+
+    </nav>
+</div>
+
+@code {
+    @* 
+        Estado del menú (colapsar/expandir):
+        - Hoy ToggleNavMenu no cambia la UI porque NavMenuCssClass no se usa en el markup.
+        - Lo dejamos porque no rompe nada y más adelante lo conectamos si querés.
+    *@
+    private bool collapseNavMenu = true;
+
+    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+}

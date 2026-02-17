@@ -1,0 +1,104 @@
+﻿@inject IJSRuntime JSRuntime
+@inject NavigationManager Nav
+
+<nav class="navbar navbar-expand-lg navbar-light w-100 p-0">
+    <div class="container-fluid p-0">
+
+        <a class="navbar-brand d-flex align-items-center gap-2 m-0" href="/admin">
+            <span>🛠️</span>
+            <span class="brand-text">Admin - La Nonna</span>
+        </a>
+
+        <button class="navbar-toggler" type="button"
+                data-bs-toggle="collapse" data-bs-target="#adminTopNav"
+                aria-controls="adminTopNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="adminTopNav">
+            <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
+
+                <li class="nav-item">
+                    <NavLink class="nav-link" href="/admin" Match="NavLinkMatch.All">
+                        <i class="bi bi-house-gear-fill me-2"></i>Inicio Admin
+                    </NavLink>
+                </li>
+
+                <li class="nav-item">
+                    <NavLink class="nav-link" href="/admin/productos">
+                        <i class="bi bi-box-seam-fill me-2"></i>Productos
+                    </NavLink>
+                </li>
+
+                <li class="nav-item">
+                    <NavLink class="nav-link" href="/admin/detalle-lista-precio">
+                        <i class="bi bi-cash-coin me-2"></i>Listas de precio
+                    </NavLink>
+                </li>
+@* 
+                <li class="nav-item">
+                    <NavLink class="nav-link" href="/admin/detalle-lista-precio">
+                        <i class="bi bi-tags-fill me-2"></i>Detalle lista
+                    </NavLink>
+
+                </li> *@
+
+
+
+                <li class="nav-item">
+                    <NavLink class="nav-link" href="/admin/usuarios">
+                        <i class="bi bi-people-fill me-2"></i>Usuarios
+                    </NavLink>
+                </li>
+
+
+                <li class="nav-item">
+                    <NavLink class="nav-link" href="/api/Pedido/ListaSB">
+                        <i class="bi bi-receipt-cutoff me-2"></i>Pedidos
+                    </NavLink>
+                </li>
+
+                <li class="nav-item">
+                    <NavLink class="nav-link" href="/admin/promociones">
+                        <i class="bi bi-stars me-2"></i>Promociones
+                    </NavLink>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link text-danger fw-semibold" href="#" @onclick="CerrarSesion">
+                        <i class="bi bi-box-arrow-right me-2"></i>Salir
+                    </a>
+                </li>
+
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<style>
+    .brand-text {
+        color: #ff2f2f;
+        font-weight: 800;
+        letter-spacing: 0.2px;
+    }
+
+    .nav-link.active {
+        font-weight: 700;
+        text-decoration: underline;
+        text-underline-offset: 6px;
+    }
+</style>
+
+@code {
+    private async Task CerrarSesion()
+    {
+        // Limpieza completa (porque ahora hay JWT)
+        await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "usuarioNombre");
+        await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "usuarioId");
+        await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "usuarioRol");
+        await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "usuarioTipoCliente");
+        await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "authToken");
+
+        Nav.NavigateTo("/LoginUsuarios", true);
+    }
+}
