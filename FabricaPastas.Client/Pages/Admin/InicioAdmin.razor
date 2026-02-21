@@ -1,73 +1,71 @@
 ﻿@page "/InicioAdmin"
-@page "/admin"
-@layout FabricaPastas.Client.Layout.AdminLayout
+@* @page "/admin"  *@
+@* @layout FabricaPastas.Client.Layout.AdminLayout *@
 
-<h1 class="mb-3">🛠️ Panel de Administración</h1>
+<div class="container my-5 text-center">
 
-<p class="text-muted">
-    Desde acá vas a poder administrar productos, listas de precios, pedidos y promociones.
-</p>
+    <!-- Encabezado -->
+    <h1 class="fw-bold text-danger mb-3">
+        🛠️ Panel de Administración
+    </h1>
+    <p class="text-muted fs-5">
+        Desde acá vas a poder administrar productos, listas de precios, pedidos y promociones.
+    </p>
 
-<div class="row g-3 mt-3">
+   
+    <div class="row g-4 mt-4 justify-content-center">
 
-    <div class="col-md-6 col-lg-4">
-        <div class="card shadow-sm rounded-4">
-            <div class="card-body">
-                <h5 class="card-title"><i class="bi bi-box-seam-fill me-2"></i>Productos</h5>
-                <p class="card-text text-muted">Crear, editar, listar, subir imagen.</p>
-                <a class="btn btn-primary" href="/admin/productos">Ir</a>
+        <!-- Productos -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow-lg border-0 rounded-4 h-100">
+                <div class="card-body">
+                    <h5 class="card-title text-primary fw-semibold">
+                        <i class="bi bi-box-seam-fill me-2"></i> Productos
+                    </h5>
+                    <p class="card-text text-muted">Crear, editar, listar, subir imagen.</p>
+                    <a class="btn btn-outline-primary rounded-pill px-4 shadow-sm" href="/admin/productos">Ir</a>
+                </div>
             </div>
         </div>
+
+        <!-- Listas de precio -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow-lg border-0 rounded-4 h-100">
+                <div class="card-body">
+                    <h5 class="card-title text-success fw-semibold">
+                        <i class="bi bi-cash-coin me-2"></i> Listas de precio
+                    </h5>
+                    <p class="card-text text-muted">Gestionar listas mayorista/minorista.</p>
+                    <a class="btn btn-outline-success rounded-pill px-4 shadow-sm" href="/admin/detalle-lista-precio">Ir</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Usuarios -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow-lg border-0 rounded-4 h-100">
+                <div class="card-body">
+                    <h5 class="card-title text-info fw-semibold">
+                        <i class="bi bi-people-fill me-2"></i> Usuarios
+                    </h5>
+                    <p class="card-text text-muted">Lista completa de usuarios.</p>
+                    <a class="btn btn-outline-info rounded-pill px-4 shadow-sm" href="/admin/usuarios">Ir</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pedidos -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow-lg border-0 rounded-4 h-100">
+                <div class="card-body">
+                    <h5 class="card-title text-warning fw-semibold">
+                        <i class="bi bi-receipt-cutoff me-2"></i> Pedidos
+                    </h5>
+                    <p class="card-text text-muted">Lista completa, estado, filtros, detalle, PDF.</p>
+                    <a class="btn btn-outline-warning rounded-pill px-4 shadow-sm" href="/admin/pedidos">Ir</a>
+                </div>
+            </div>
+        </div>
+
     </div>
-
-    <div class="col-md-6 col-lg-4">
-        <div class="card shadow-sm rounded-4">
-            <div class="card-body">
-                <h5 class="card-title"><i class="bi bi-cash-coin me-2"></i>Listas de precio</h5>
-                <p class="card-text text-muted">Gestionar listas mayorista/minorista.</p>
-                <a class="btn btn-primary" href="/admin/detalle-lista-precio">Ir</a>
-            </div>
-        </div>
-    </div>
-
-   @*  <div class="col-md-6 col-lg-4">
-        <div class="card shadow-sm rounded-4">
-            <div class="card-body">
-                <h5 class="card-title"><i class="bi bi-tags-fill me-2"></i>Detalle lista</h5>
-                <p class="card-text text-muted">Precio por producto según lista.</p>
-                <a class="btn btn-primary" href="/admin/detalle-lista-precio">Ir</a>
-            </div>
-        </div>
-    </div> *@
-
-    <div class="col-md-6 col-lg-4">
-        <div class="card shadow-sm rounded-4">
-            <div class="card-body">
-                <h5 class="card-title"><i class="bi bi-people-fill me-2"></i>Usuarios</h5>
-                <p class="card-text text-muted">Lista completa de usuarios.</p>
-                <a class="btn btn-primary" href="/admin/usuarios">Ir</a>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-6 col-lg-4">
-        <div class="card shadow-sm rounded-4">
-            <div class="card-body">
-                <h5 class="card-title"><i class="bi bi-receipt-cutoff me-2"></i>Pedidos</h5>
-                <p class="card-text text-muted">Lista completa, estado, filtros, detalle, PDF.</p>
-                <a class="btn btn-primary" href="/admin/pedidos">Ir</a>
-            </div>
-        </div>
-    </div>
-
-@*     <div class="col-md-6 col-lg-4">
-        <div class="card shadow-sm rounded-4">
-            <div class="card-body">
-                <h5 class="card-title"><i class="bi bi-stars me-2"></i>Promociones</h5>
-                <p class="card-text text-muted">Opcional si queda tiempo.</p>
-                <a class="btn btn-primary" href="/admin/promociones">Ir</a>
-            </div>
-        </div>
-    </div> *@
-
 </div>

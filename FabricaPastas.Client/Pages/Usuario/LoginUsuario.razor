@@ -30,11 +30,20 @@
                     <!-- Contraseña -->
                     <div class="mb-3">
                         <label for="Contraseña" class="form-label fw-semibold">Contraseña</label>
-                        <InputText id="Contraseña"
-                                   @bind-Value="usuarioLogin.Contraseña"
-                                   type="password"
-                                   class="form-control rounded-pill shadow-sm"
-                                   placeholder="••••••••" />
+
+                        <div class="input-group">
+                            <InputText id="Contraseña"
+                                       @bind-Value="usuarioLogin.Contraseña"
+                                       type="@passwordInputType"
+                                       class="form-control rounded-start-pill shadow-sm"
+                                       placeholder="••••••••" />
+                            <button type="button"
+                                    class="btn btn-outline-secondary rounded-end-pill"
+                                    @onclick="TogglePasswordVisibility">
+                                <i class="bi @(passwordInputType == "password" ? "bi-eye" : "bi-eye-slash")"></i>
+                            </button>
+                        </div>
+
                         <ValidationMessage For="@(() => usuarioLogin.Contraseña)" />
                     </div>
 
@@ -124,5 +133,14 @@
             cargando = false;
             Mensaje = $"Ocurrió un error: {ex.Message}";
         }
+
+        @code {
+    private string passwordInputType = "password";
+
+    private void TogglePasswordVisibility()
+    {
+        passwordInputType = passwordInputType == "password" ? "text" : "password";
+    }
+}
     }
 }
