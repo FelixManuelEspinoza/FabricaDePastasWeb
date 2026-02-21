@@ -1,33 +1,35 @@
 ﻿@page "/Catalogo"
 @inject NavigationManager navigationManager
-@*
-    Página “Catálogo” simple:
-    - Da accesos a “Lista de productos” y “Promociones”.
-    - Usa NavigationManager para navegar sin recargar.
-*@
 
 <div class="container mt-5">
     <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card shadow-sm border-0">
-                <div class="card-body text-center">
-                    <h1 class="card-title mb-4">📦 Catálogo de Productos</h1>
+        <div class="col-md-10 col-lg-8">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-body text-center p-5">
 
-                    @* Botonera central *@
+                    <!-- Título con estilo -->
+                    <h1 class="card-title mb-4 fw-bold text-warning">
+                        🍝 Catálogo de Productos
+                    </h1>
+                    <p class="text-muted mb-4">
+                        Descubrí nuestras pastas artesanales y promociones especiales.
+                    </p>
+
+                    <!-- Botonera central -->
                     <div class="d-grid gap-3 col-10 mx-auto">
 
-                        @* Navegación interna a la lista de productos *@
-                        <button class="btn btn-primary" @onclick="ListaProducto">
+                        <!-- Ver productos -->
+                        <button class="btn btn-primary btn-lg fw-semibold shadow-sm" @onclick="ListaProducto">
                             <i class="bi bi-box-seam me-2"></i> Ver productos
                         </button>
 
-                        @* Link directo (anchor) a la lista de promociones *@
-                        <a class="btn btn-success" href="/api/Promocion/Lista">
+                        <!-- Ver promociones -->
+                        <a class="btn btn-success btn-lg fw-semibold shadow-sm" href="/api/Promocion/Lista">
                             <i class="bi bi-tags me-2"></i> Ver promociones
                         </a>
 
-                        @* Volver al inicio *@
-                        <button class="btn btn-outline-danger" @onclick="Cancelar">
+                        <!-- Volver al inicio -->
+                        <button class="btn btn-outline-danger btn-lg fw-semibold shadow-sm" @onclick="Cancelar">
                             <i class="bi bi-x-circle me-2"></i> Volver al inicio
                         </button>
                     </div>
@@ -38,9 +40,9 @@
 </div>
 
 @code {
-    // Navega a la lista de productos (ruta del Client)
+   
     private void ListaProducto() => navigationManager.NavigateTo("/api/Producto/Lista");
 
-    // Vuelve a Home
+   
     private void Cancelar() => navigationManager.NavigateTo("/");
 }

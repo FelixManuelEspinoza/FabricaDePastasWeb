@@ -65,10 +65,10 @@ namespace FabricaPastas.Server.Util
             #endregion
 
             // DTO -> Entity (registro)
-            CreateMap<CrearUsuarioDTO, Usuario>()
-                .ForMember(d => d.Telefono, opt => opt.MapFrom(s => s.Teléfono))
-                .ForMember(d => d.Direccion, opt => opt.MapFrom(s => s.Dirección))
-                .ForMember(d => d.PasswordHash, opt => opt.Ignore());
+            //CreateMap<CrearUsuarioDTO, Usuario>()
+            //    .ForMember(d => d.Telefono, opt => opt.MapFrom(s => s.Teléfono))
+            //    .ForMember(d => d.Direccion, opt => opt.MapFrom(s => s.Dirección))
+            //    .ForMember(d => d.PasswordHash, opt => opt.Ignore());
 
             #region DTO Rol
             CreateMap<CrearRolDTO, Rol>();

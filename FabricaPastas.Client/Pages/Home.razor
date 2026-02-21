@@ -1,137 +1,132 @@
 ﻿@page "/"
-@*
-    Ruta "/" = Home.
-    Esta página usa un fondo con imagen SOLO para Home, sin afectar otras páginas.
-    Lo hacemos con pseudo-elementos (::before y ::after) y z-index negativo.
-*@
 
-<div class="home-page">
-    @* HERO: sección principal con título + botones de acceso rápido *@
-    <div class="hero d-flex flex-column justify-content-center align-items-center text-center text-white">
-        <h1 class="display-4 fw-bold mb-3">🍝 Bienvenido a La Nonna Pastas</h1>
-        <p class="lead mb-4">Sabores caseros, calidad artesanal y tradición familiar.</p>
+<!DOCTYPE html>
+    <html lang="es">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>La Nonna Pastas</title>
+            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+            <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
 
-        @* Botones de acción principales *@
-        <div class="d-flex flex-column align-items-center gap-3">
+            <style>
+                body {
+                    margin: 0;
+                    font-family: 'Segoe UI', sans-serif;
+                    background-color: #f8f9fa; /* Fondo claro y limpio */
+                }
 
-            @* ✅ Botones internos: Login / Registro / Catálogo *@
-            <div class="d-flex flex-column flex-md-row gap-2 justify-content-center w-100">
-                <a class="btn btn-light fw-semibold shadow-sm"
-                   href="/LoginUsuarios">
-                    🔐 Iniciar sesión
-                </a>
+                .hero {
+                    min-height: 80vh;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                    align-items: center;
+                    text-align: center;
+                    color: #212529;
+                    padding: 2rem;
+                }
 
-                <a class="btn btn-warning fw-semibold shadow-sm"
-                   href="/api/Usuario/Registro/Crear">
-                    📝 Crear cuenta
-                </a>
+                .hero h1 {
+                    font-size: 3rem;
+                    font-weight: 700;
+                    margin-bottom: 1rem;
+                }
 
-                <a class="btn btn-outline-light fw-semibold shadow-sm"
-                   href="/Catalogo">
-                    📦 Ver catálogo
-                </a>
-            </div>
+                .hero p {
+                    font-size: 1.25rem;
+                    margin-bottom: 2rem;
+                }
 
-            @* WhatsApp: abre en otra pestaña *@
-            <a class="btn btn-outline-light d-flex align-items-center gap-2 fw-semibold shadow-sm"
-               target="_blank"
-               href="https://web.whatsapp.com/">
-                <i class="bi bi-whatsapp fs-4"></i>
-                Escribinos por WhatsApp
-            </a>
+                .btn {
+                    transition: all 0.3s ease;
+                }
 
-            @* Maps: ubicación, abre en otra pestaña *@
-            <a class="btn btn-outline-light d-flex align-items-center gap-2 fw-semibold shadow-sm"
-               target="_blank"
-               href="https://maps.app.goo.gl/2L1eU1cPGsSpmUDJ9?g_st=aw">
-                <i class="bi bi-geo-alt-fill fs-5"></i>
-                Encontranos aquí
-            </a>
-        </div>
-    </div>
+                .btn:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                }
 
-    @*
-        Sección de tarjetas:
-        - Son accesos a páginas internas (rutas del Client) que suelen listar promos.
-        - Si esas páginas todavía no existen, igual Home se ve bien.
-    *@
-    <div class="container my-5">
-        <div class="row row-cols-1 row-cols-md-2 g-4">
+                .card {
+                    border-radius: 1rem;
+                    overflow: hidden;
+                }
 
-            <div class="col">
-                <div class="card h-100 shadow-sm border-start border-4 border-success">
-                    <div class="card-body">
-                        <h5 class="card-title text-success fw-bold">🎯 Promos activas</h5>
-                        <p class="card-text">¿Querés ver nuestras promociones? ¡Clickeá el botón!</p>
+                .card-header {
+                    font-weight: bold;
+                }
 
-                        @* Link interno a una ruta que muestra promociones *@
-                        <a href="/api/Promocion/ListaUsuarios" class="btn btn-success">Ver promociones</a>
+            </style>
+
+        </head>
+
+        <body>
+
+            <!-- Hero principal -->
+            <section class="hero bg-light">
+
+                <h1>🍝 Bienvenido a La Nonna Pastas</h1>
+
+                <p>Sabores caseros, calidad artesanal y tradición familiar.</p>
+
+                <div class="d-flex flex-column flex-md-row gap-3 justify-content-center w-100 mb-3">
+                    <a class="btn btn-dark btn-lg fw-semibold shadow-sm" href="/LoginUsuarios">🔐 Iniciar sesión</a>
+                    <a class="btn btn-warning btn-lg fw-semibold shadow-sm" href="/api/Usuario/Registro/Crear">📝 Crear cuenta</a>
+                    <a class="btn btn-outline-dark btn-lg fw-semibold shadow-sm" href="/Catalogo">📦 Ver catálogo</a>
+                </div>
+
+                <div class="d-flex flex-column flex-md-row gap-3">
+                    <a class="btn btn-outline-success d-flex align-items-center gap-2 fw-semibold shadow-sm" target="_blank" href="https://web.whatsapp.com/">
+                        <i class="bi bi-whatsapp fs-4"></i> Escribinos por WhatsApp
+                    </a>
+                    <a class="btn btn-outline-primary d-flex align-items-center gap-2 fw-semibold shadow-sm" target="_blank" href="https://maps.app.goo.gl/2L1eU1cPGsSpmUDJ9?g_st=aw">
+                        <i class="bi bi-geo-alt-fill fs-5"></i> Encontranos aquí
+                    </a>
+                </div>
+
+            </section>
+
+            <!-- Sección de promociones -->
+         @*    <section class="container my-5">
+                <div class="row row-cols-1 row-cols-md-3 g-4 text-center">
+                    <div class="col">
+                        <div class="card shadow-sm border-0 h-100">
+                            <div class="card-header bg-success text-white">🎯 Promos activas</div>
+                            <div class="card-body">
+                                <p>¿Querés ver nuestras promociones? ¡Clickeá el botón!</p>
+                            </div>
+                            <div class="card-footer bg-transparent">
+                                <a href="/api/Promocion/ListaUsuarios" class="btn btn-success w-100">Ver promociones</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col">
+                        <div class="card shadow-sm border-0 h-100">
+                            <div class="card-header bg-primary text-white">🛍️ Promos por producto</div>
+                            <div class="card-body">
+                                <p>Consultá las promociones específicas por producto.</p>
+                            </div>
+                            <div class="card-footer bg-transparent">
+                                <a href="/api/Promocion_Producto/ListaSB" class="btn btn-primary w-100">Ver promos por producto</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col">
+                        <div class="card shadow-sm border-0 h-100">
+                            <div class="card-header bg-danger text-white">👥 Promos por usuarios</div>
+                            <div class="card-body">
+                                <p>Consultá las promociones específicas por usuarios.</p>
+                            </div>
+                            <div class="card-footer bg-transparent">
+                                <a href="/api/Promocion_Usuario/Lista" class="btn btn-danger w-100">Ver promos por usuarios</a>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </section> *@
 
-            <div class="col">
-                <div class="card h-100 shadow-sm border-start border-4 border-primary">
-                    <div class="card-body">
-                        <h5 class="card-title text-primary fw-bold">🛍️ Promos por producto</h5>
-                        <p class="card-text">Consultá las promociones específicas por producto.</p>
+        </body>
 
-                        @* Link interno a otra sección (si existe) *@
-                        <a href="/api/Promocion_Producto/ListaSB" class="btn btn-primary">Ver promos por producto</a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col">
-                <div class="card h-100 shadow-sm border-start border-4 border-danger">
-                    <div class="card-body">
-                        <h5 class="card-title text-danger fw-bold">👥 Promos por usuarios</h5>
-                        <p class="card-text">Consultá las promociones específicas por usuarios.</p>
-
-                        @* Link interno a otra sección (si existe) *@
-                        <a href="/api/Promocion_Usuario/Lista" class="btn btn-danger">Ver promos por usuarios</a>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-    </div>
-</div>
-
-<style>
-    /*
-            Fondo SOLO para Home: se coloca con ::before (imagen) y ::after (oscurecimiento).
-            Z-index negativo para que quede detrás de todo.
-            Nota: la imagen debe existir en wwwroot/Images/width_550.png
-        */
-    .home-page::before {
-        content: "";
-        position: fixed;
-        inset: 0;
-        background: url('/Images/width_550.png') no-repeat center center fixed;
-        background-size: cover;
-        z-index: -2;
-    }
-
-    /* Capa oscura encima de la imagen para mejorar contraste del texto */
-    .home-page::after {
-        content: "";
-        position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.5);
-        z-index: -1;
-    }
-
-    /* Contenedor del hero (texto centrado, sombra y bordes redondeados) */
-    .hero {
-        min-height: 75vh;
-        padding: 3rem;
-        border-radius: 1rem;
-        box-shadow: 0 0 25px rgba(0, 0, 0, 0.4);
-    }
-
-    /* Tarjetas con fondo blanco semiopaco para que se lean sobre el fondo */
-    .card {
-        background-color: rgba(255, 255, 255, 0.95);
-    }
-</style>
+    </html>

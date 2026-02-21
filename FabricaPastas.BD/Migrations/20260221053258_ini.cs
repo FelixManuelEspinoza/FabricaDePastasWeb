@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace FabricaPastas.BD.Migrations
 {
     /// <inheritdoc />
-    public partial class BD : Migration
+    public partial class ini : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -88,7 +88,8 @@ namespace FabricaPastas.BD.Migrations
                     Descripcion = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
                     Fecha_Inicio = table.Column<DateOnly>(type: "date", nullable: false),
                     Fecha_Fin = table.Column<DateOnly>(type: "date", nullable: false),
-                    Activa = table.Column<bool>(type: "bit", nullable: false)
+                    Activa = table.Column<bool>(type: "bit", nullable: false),
+                    Descuento_Porcentaje = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -144,6 +145,35 @@ namespace FabricaPastas.BD.Migrations
                         column: x => x.CategoriaId,
                         principalTable: "Categoria_Producto",
                         principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Promocion_Rango",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Promocion_Id = table.Column<int>(type: "int", nullable: false),
+                    Tipo_Cliente_Id = table.Column<int>(type: "int", nullable: true),
+                    MinPedidos = table.Column<int>(type: "int", nullable: false),
+                    MaxPedidos = table.Column<int>(type: "int", nullable: true),
+                    Descuento_Porcentaje = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Promocion_Rango", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Promocion_Rango_Promocion_Promocion_Id",
+                        column: x => x.Promocion_Id,
+                        principalTable: "Promocion",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Promocion_Rango_Tipo_Cliente_Tipo_Cliente_Id",
+                        column: x => x.Tipo_Cliente_Id,
+                        principalTable: "Tipo_Cliente",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -255,10 +285,10 @@ namespace FabricaPastas.BD.Migrations
                     ObservacionesCatering = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Total = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     CodigoPedido = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
-                    UsuarioId = table.Column<int>(type: "int", nullable: true),
                     Estado_PedidoId = table.Column<int>(type: "int", nullable: true),
+                    Forma_PagoId = table.Column<int>(type: "int", nullable: true),
                     Metodo_EntregaId = table.Column<int>(type: "int", nullable: true),
-                    Forma_PagoId = table.Column<int>(type: "int", nullable: true)
+                    UsuarioId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -269,20 +299,44 @@ namespace FabricaPastas.BD.Migrations
                         principalTable: "Estado_Pedido",
                         principalColumn: "Id");
                     table.ForeignKey(
+                        name: "FK_Pedido_Estado_Pedido_Estado_Pedido_Id",
+                        column: x => x.Estado_Pedido_Id,
+                        principalTable: "Estado_Pedido",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
                         name: "FK_Pedido_Forma_Pago_Forma_PagoId",
                         column: x => x.Forma_PagoId,
                         principalTable: "Forma_Pago",
                         principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Pedido_Forma_Pago_Forma_Pago_Id",
+                        column: x => x.Forma_Pago_Id,
+                        principalTable: "Forma_Pago",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Pedido_Metodo_Entrega_Metodo_EntregaId",
                         column: x => x.Metodo_EntregaId,
                         principalTable: "Metodo_Entrega",
                         principalColumn: "Id");
                     table.ForeignKey(
+                        name: "FK_Pedido_Metodo_Entrega_Metodo_Entrega_Id",
+                        column: x => x.Metodo_Entrega_Id,
+                        principalTable: "Metodo_Entrega",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
                         name: "FK_Pedido_Usuario_UsuarioId",
                         column: x => x.UsuarioId,
                         principalTable: "Usuario",
                         principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Pedido_Usuario_Usuario_Id",
+                        column: x => x.Usuario_Id,
+                        principalTable: "Usuario",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -379,6 +433,11 @@ namespace FabricaPastas.BD.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_Pedido_Estado_Pedido_Id",
+                table: "Pedido",
+                column: "Estado_Pedido_Id");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Pedido_Estado_PedidoId",
                 table: "Pedido",
                 column: "Estado_PedidoId");
@@ -389,9 +448,19 @@ namespace FabricaPastas.BD.Migrations
                 column: "FechaPedido");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Pedido_Forma_Pago_Id",
+                table: "Pedido",
+                column: "Forma_Pago_Id");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Pedido_Forma_PagoId",
                 table: "Pedido",
                 column: "Forma_PagoId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Pedido_Metodo_Entrega_Id",
+                table: "Pedido",
+                column: "Metodo_Entrega_Id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Pedido_Metodo_EntregaId",
@@ -424,11 +493,6 @@ namespace FabricaPastas.BD.Migrations
                 column: "Nombre");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Promocion_Activa_Fecha_Inicio_Fecha_Fin",
-                table: "Promocion",
-                columns: new[] { "Activa", "Fecha_Inicio", "Fecha_Fin" });
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Promocion_Producto_ProductoId",
                 table: "Promocion_Producto",
                 column: "ProductoId");
@@ -443,6 +507,16 @@ namespace FabricaPastas.BD.Migrations
                 name: "IX_Promocion_Producto_PromocionId",
                 table: "Promocion_Producto",
                 column: "PromocionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Promocion_Rango_Promocion_Id_Tipo_Cliente_Id_MinPedidos_MaxPedidos",
+                table: "Promocion_Rango",
+                columns: new[] { "Promocion_Id", "Tipo_Cliente_Id", "MinPedidos", "MaxPedidos" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Promocion_Rango_Tipo_Cliente_Id",
+                table: "Promocion_Rango",
+                column: "Tipo_Cliente_Id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Rol_Nombre",
@@ -495,6 +569,9 @@ namespace FabricaPastas.BD.Migrations
 
             migrationBuilder.DropTable(
                 name: "Promocion_Producto");
+
+            migrationBuilder.DropTable(
+                name: "Promocion_Rango");
 
             migrationBuilder.DropTable(
                 name: "Pedido");

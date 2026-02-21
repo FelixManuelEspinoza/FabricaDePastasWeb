@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FabricaPastas.BD.Migrations
 {
     [DbContext(typeof(Context))]
-    [Migration("20260216204305_promos")]
-    partial class promos
+    [Migration("20260221053258_ini")]
+    partial class ini
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -349,6 +349,9 @@ namespace FabricaPastas.BD.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
+                    b.Property<decimal>("Descuento_Porcentaje")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<DateOnly>("Fecha_Fin")
                         .HasColumnType("date");
 
@@ -361,8 +364,6 @@ namespace FabricaPastas.BD.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Activa", "Fecha_Inicio", "Fecha_Fin");
 
                     b.ToTable("Promocion");
                 });
