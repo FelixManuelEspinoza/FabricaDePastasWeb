@@ -1,8 +1,45 @@
 ﻿@page "/InicioAdmin"
 @* @page "/admin"  *@
 @* @layout FabricaPastas.Client.Layout.AdminLayout *@
+inject IJSRuntime JSRuntime
+@inject NavigationManager navigationManager
 
 <div class="container my-5 text-center">
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm mb-4">
+        <div class="container-fluid">
+
+            <a class="navbar-brand fw-bold text-danger" href="/">🍝 La Nonna</a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#navbarNonna"
+                    aria-controls="navbarNonna"
+                    aria-expanded="false"
+                    aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse justify-content-center" id="navbarNonna">
+                <ul class="navbar-nav gap-3">
+
+                    <li class="nav-item">
+                        <a class="nav-link active d-flex align-items-center gap-2 text-primary fw-bold" href="/InicioUsuario">
+                            <i class="bi bi-house-door-fill"></i>Inicio
+                        </a>
+                    </li>
+
+                   
+
+                    <li class="nav-item">
+                        <a class="nav-link d-flex align-items-center gap-2 text-danger fw-semibold" href="#" @onclick="CerrarSesion">
+                            <i class="bi bi-box-arrow-right"></i>Salir
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
 
     <!-- Encabezado -->
     <h1 class="fw-bold text-danger mb-3">
@@ -69,3 +106,12 @@
 
     </div>
 </div>
+
+
+@code{
+    private async Task CerrarSesion()
+    {
+        // await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "usuarioNombre");
+        navigationManager.NavigateTo("/LoginUsuarios");
+    }
+}
