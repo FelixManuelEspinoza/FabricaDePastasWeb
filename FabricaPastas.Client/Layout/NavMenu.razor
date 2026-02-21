@@ -1,113 +1,62 @@
 ﻿
-<div class="bg-light p-3" @onclick="ToggleNavMenu">
+<div class="bg-light p-3 rounded shadow-sm">
+    <nav class="nav flex-column gap-2">
 
-    <nav class="nav flex-column">
+        <!-- Inicio -->
+        <NavLink class="nav-link d-flex align-items-center fw-semibold rounded-pill bg-dark text-white px-3 py-2 shadow-sm"
+                 href="/" Match="NavLinkMatch.All">
+            <i class="bi bi-house-door-fill me-2"></i> Inicio
+        </NavLink>
 
+        <!-- Catálogo -->
+        <NavLink class="nav-link d-flex align-items-center fw-semibold rounded-pill bg-warning text-dark px-3 py-2 shadow-sm"
+                 href="/Catalogo" Match="NavLinkMatch.All">
+            <i class="bi bi-basket-fill me-2"></i> Catálogo
+        </NavLink>
 
-        <div class="nav-item mb-2 bg-dark rounded">
-            <NavLink class="nav-link text-white fw-semibold" href="/" Match="NavLinkMatch.All">
-                <i class="bi bi-house-door-fill me-2"></i>Inicio
-            </NavLink>
-        </div>
+        <!-- Nosotros -->
+        <NavLink class="nav-link d-flex align-items-center fw-semibold rounded-pill bg-info text-white px-3 py-2 shadow-sm"
+                 href="/Nosotros" Match="NavLinkMatch.All">
+            <i class="bi bi-people-fill me-2"></i> Nosotros
+        </NavLink>
 
-        <div class="nav-item mb-2 bg-warning rounded">
-            <NavLink class="nav-link text-dark fw-semibold" href="/Catalogo" Match="NavLinkMatch.All">
-                <i class="bi bi-basket-fill me-2"></i>Catálogo
-            </NavLink>
-        </div>
+        <!-- FAQ -->
+        <NavLink class="nav-link d-flex align-items-center fw-semibold rounded-pill bg-primary text-white px-3 py-2 shadow-sm"
+                 href="/preguntas-frecuentes" Match="NavLinkMatch.All">
+            <i class="bi bi-question-circle-fill me-2"></i> FAQ
+        </NavLink>
 
-        <div class="nav-item mb-2 bg-info rounded">
-            <NavLink class="nav-link text-white fw-semibold" href="/Nosotros" Match="NavLinkMatch.All">
-                <i class="bi bi-people-fill me-2"></i>Nosotros
-            </NavLink>
-        </div>
+        <!-- Sección usuarios -->
+        <NavLink class="nav-link d-flex align-items-center fw-semibold rounded-pill bg-primary text-white px-3 py-2 shadow-sm"
+                 href="/SeccionUsuarios" Match="NavLinkMatch.All">
+            <i class="bi bi-box-arrow-in-right me-2"></i> Sección usuarios
+        </NavLink>
 
-        <div class="nav-item mb-3 bg-primary rounded">
-            <NavLink class="nav-link text-white fw-semibold" href="/preguntas-frecuentes" Match="NavLinkMatch.All">
-                <i class="bi bi-question-circle-fill me-2"></i>FAQ
-            </NavLink>
-        </div>
+        <!-- Opciones administrativas -->
+        <NavLink class="nav-link d-flex align-items-center fw-semibold rounded-pill bg-light text-dark px-3 py-2 border"
+                 href="/api/Lista_Precio/Crear" Match="NavLinkMatch.All">
+            <i class="bi bi-cash-stack me-2 text-success"></i> Nueva Lista Precio
+        </NavLink>
 
-      
+        <NavLink class="nav-link d-flex align-items-center fw-semibold rounded-pill bg-light text-dark px-3 py-2 border"
+                 href="/api/Lista_Precio/Lista" Match="NavLinkMatch.All">
+            <i class="bi bi-card-list me-2 text-success"></i> Lista Precio (L)
+        </NavLink>
 
-        <div class="nav-item mb-2 bg-primary rounded">
-            <NavLink class="nav-link text-white fw-semibold" href="/SeccionUsuarios" Match="NavLinkMatch.All">
-                <i class="bi bi-box-arrow-in-right me-2"></i>Sección usuarios
-            </NavLink>
-        </div>
+        <NavLink class="nav-link d-flex align-items-center fw-semibold rounded-pill bg-light text-dark px-3 py-2 border"
+                 href="/api/Detalle_Lista_Precio/Crear" Match="NavLinkMatch.All">
+            <i class="bi bi-file-earmark-plus me-2 text-primary"></i> Detalle Lista Precio
+        </NavLink>
 
-       
-
-        <div class="nav-item mb-2">
-            <NavLink class="nav-link text-dark fw-semibold" href="/api/Lista_Precio/Crear" Match="NavLinkMatch.All">
-                <i class="bi bi-cash-stack me-2"></i>Nueva Lista_precio
-            </NavLink>
-        </div>
-
-        <div class="nav-item mb-2">
-            <NavLink class="nav-link text-dark fw-semibold" href="/api/Lista_Precio/Lista" Match="NavLinkMatch.All">
-                <i class="bi bi-card-list me-2"></i>Lista_precio(L)
-            </NavLink>
-        </div>
-
-        <div class="nav-item mb-2">
-            <NavLink class="nav-link text-dark fw-semibold" href="/api/Detalle_Lista_Precio/Crear" Match="NavLinkMatch.All">
-                <i class="bi bi-file-earmark-plus me-2"></i>DetalleListaPrecio
-            </NavLink>
-        </div>
-
-        <div class="nav-item mb-2">
-            <NavLink class="nav-link text-dark fw-semibold" href="/api/Forma_Pago/Crear" Match="NavLinkMatch.All">
-                <i class="bi bi-credit-card me-2"></i>Forma_Pago/Crear
-            </NavLink>
-        </div>
-
-        <div class="nav-item mb-2">
-            <NavLink class="nav-link text-dark fw-semibold" href="/api/Forma_Pago/Lista" Match="NavLinkMatch.All">
-                <i class="bi bi-credit-card me-2"></i>Forma_Pago(L)
-            </NavLink>
-        </div>
-
-        <div class="nav-item mb-2">
-            <NavLink class="nav-link text-dark fw-semibold" href="/api/Estado_Pedido/Lista" Match="NavLinkMatch.All">
-                <i class="bi bi-clipboard-check me-2"></i>Estado_Pedido(L)
-            </NavLink>
-        </div>
-
-        <div class="nav-item mb-2">
-            <NavLink class="nav-link text-dark fw-semibold" href="/api/Detalle_Pedido/Crear" Match="NavLinkMatch.All">
-                <i class="bi bi-file-earmark-plus me-2"></i>Detalle_Pedido/Crear
-            </NavLink>
-        </div>
-
-        <div class="nav-item mb-2">
-            <NavLink class="nav-link text-dark fw-semibold" href="/api/Detalle_Pedido/Lista" Match="NavLinkMatch.All">
-                <i class="bi bi-card-list me-2"></i>Detalle_Pedido(L)
-            </NavLink>
-        </div>
-
-        <div class="nav-item mb-2">
-            <NavLink class="nav-link text-dark fw-semibold" href="/api/Categoria_Producto/Crear" Match="NavLinkMatch.All">
-                <i class="bi bi-tags-fill me-2"></i>Crear Categoria Prod
-            </NavLink>
-        </div>
-
-        <div class="nav-item mb-2">
-            <NavLink class="nav-link text-dark fw-semibold" href="/api/Categoria_Producto/Lista" Match="NavLinkMatch.All">
-                <i class="bi bi-card-list me-2"></i>Categoria producto (L)
-            </NavLink>
-        </div>
-
-        <div class="nav-item mb-2">
-            <NavLink class="nav-link text-dark fw-semibold" href="/catalogo-usuario" Match="NavLinkMatch.All">
-                <i class="bi bi-card-list me-2"></i>Catálogo Usuario
-            </NavLink>
-        </div>
+        <!-- Más opciones... -->
+        <!-- Podés repetir el mismo estilo para Forma_Pago, Estado_Pedido, Categoría Producto, etc. -->
 
     </nav>
 
-    <div class="nav-item px-3 mb-1">
-        <NavLink class="nav-link d-flex align-items-center text-dark fw-semibold" href="https://localhost:7093/swagger" target="_blank">
+    <!-- Swagger -->
+    <div class="mt-3">
+        <NavLink class="nav-link d-flex align-items-center fw-semibold rounded-pill bg-light text-dark px-3 py-2 border shadow-sm"
+                 href="https://localhost:7093/swagger" target="_blank">
             <i class="bi bi-code-slash me-2 text-primary"></i> Swagger
         </NavLink>
     </div>

@@ -14,32 +14,39 @@
 
     <div class="row justify-content-center">
         <div class="col-md-6">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-body p-4">
 
-            <div class="mb-3">
-                <label for="NombreUsuario" class="form-label">Usuario</label>
-                <InputText id="NombreUsuario"
-                           @bind-Value="usuarioLogin.NombreUsuario"
-                           class="form-control"
-                           placeholder="Ej: juan123" />
-                <ValidationMessage For="@(() => usuarioLogin.NombreUsuario)" />
+                    <!-- Usuario -->
+                    <div class="mb-3">
+                        <label for="NombreUsuario" class="form-label fw-semibold">Usuario</label>
+                        <InputText id="NombreUsuario"
+                                   @bind-Value="usuarioLogin.NombreUsuario"
+                                   class="form-control rounded-pill shadow-sm"
+                                   placeholder="Ej: juan123" />
+                        <ValidationMessage For="@(() => usuarioLogin.NombreUsuario)" />
+                    </div>
+
+                    <!-- Contraseña -->
+                    <div class="mb-3">
+                        <label for="Contraseña" class="form-label fw-semibold">Contraseña</label>
+                        <InputText id="Contraseña"
+                                   @bind-Value="usuarioLogin.Contraseña"
+                                   type="password"
+                                   class="form-control rounded-pill shadow-sm"
+                                   placeholder="••••••••" />
+                        <ValidationMessage For="@(() => usuarioLogin.Contraseña)" />
+                    </div>
+
+                    <!-- Botón -->
+                    <div class="col-12 text-center mt-4">
+                        <button class="btn btn-success btn-lg rounded-pill px-4 shadow-sm" type="submit" disabled="@cargando">
+                            @(cargando ? "⏳ Cargando..." : "✅ Iniciar sesión")
+                        </button>
+                    </div>
+
+                </div>
             </div>
-
-            <div class="mb-3">
-                <label for="Contraseña" class="form-label">Contraseña</label>
-                <InputText id="Contraseña"
-                           @bind-Value="usuarioLogin.Contraseña"
-                           type="password"
-                           class="form-control"
-                           placeholder="••••••••" />
-                <ValidationMessage For="@(() => usuarioLogin.Contraseña)" />
-            </div>
-
-            <div class="col-12 text-center mt-4">
-                <button class="btn btn-success me-2" type="submit" disabled="@cargando">
-                    @(cargando ? "Cargando..." : "✅ Iniciar sesión")
-                </button>
-            </div>
-
         </div>
     </div>
 </EditForm>
