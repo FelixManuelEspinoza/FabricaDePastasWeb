@@ -13,7 +13,7 @@
                 body {
                     margin: 0;
                     font-family: 'Segoe UI', sans-serif;
-                    background-color: #f8f9fa; /* Fondo claro y limpio */
+                    background-color: #f8f9fa; 
                 }
 
                 .hero {
@@ -62,29 +62,54 @@
 
         <body>
 
-            <!-- Hero principal -->
-            <section class="hero bg-light">
+    <!-- Hero principal -->
+    <section class="hero bg-light py-5">
+        <div class="container text-center">
+            <h1 class="fw-bold display-4 text-warning mb-3">🍝 Bienvenido a La Nonna Pastas</h1>
+            <p class="lead text-muted mb-4">Sabores caseros, calidad artesanal y tradición familiar.</p>
 
-                <h1>🍝 Bienvenido a La Nonna Pastas</h1>
+            <div class="d-flex flex-column flex-md-row gap-3 justify-content-center mb-3">
+                <a class="btn btn-warning btn-lg fw-semibold shadow-sm" href="/api/Usuario/Registro/Crear">
+                    📝 Crear cuenta
+                </a>
+            </div>
 
-                <p>Sabores caseros, calidad artesanal y tradición familiar.</p>
+            <!-- Mensaje destacado de invitación -->
+            <div class="alert alert-warning fw-semibold col-md-8 mx-auto shadow-sm">
+                ✨ Regístrate como usuario y accedé a <strong>promociones exclusivas</strong>,
+                <strong>descuentos especiales</strong> y beneficios en tus próximas compras.
+                ¡Tu experiencia con La Nonna Pastas será aún más deliciosa!
+            </div>
 
-                <div class="d-flex flex-column flex-md-row gap-3 justify-content-center w-100 mb-3">
-                    <a class="btn btn-dark btn-lg fw-semibold shadow-sm" href="/LoginUsuarios">🔐 Iniciar sesión</a>
-                    <a class="btn btn-warning btn-lg fw-semibold shadow-sm" href="/api/Usuario/Registro/Crear">📝 Crear cuenta</a>
-                    <a class="btn btn-outline-dark btn-lg fw-semibold shadow-sm" href="/Catalogo">📦 Ver catálogo</a>
+            <div class="d-flex flex-column flex-md-row gap-3 justify-content-center mt-4">
+                <a class="btn btn-outline-success d-flex align-items-center gap-2 fw-semibold shadow-sm" target="_blank" href="https://web.whatsapp.com/">
+                    <i class="bi bi-whatsapp fs-4"></i> Escribinos por WhatsApp
+                </a>
+                <a class="btn btn-outline-primary d-flex align-items-center gap-2 fw-semibold shadow-sm" target="_blank" href="https://maps.app.goo.gl/2L1eU1cPGsSpmUDJ9?g_st=aw">
+                    <i class="bi bi-geo-alt-fill fs-5"></i> Encontranos aquí
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección Sobre Nosotros -->
+    <section class="bg-white py-5">
+        <div class="container">
+            <div class="row justify-content-center text-center">
+                <div class="col-lg-8">
+                    <h2 class="fw-bold text-dark mb-4">👩‍🍳 Nuestra historia</h2>
+                    <p class="text-muted fs-5">
+                        En <strong>La Nonna Pastas</strong> elaboramos productos artesanales con recetas familiares transmitidas de generación en generación.
+                        Nos apasiona ofrecer pastas frescas de la más alta calidad, acompañadas de promociones pensadas para que disfrutes en casa con los tuyos.
+                    </p>
+                    <p class="text-muted fs-5">
+                        Desde ravioles y sorrentinos hasta fideos caseros y lasañas, cada plato refleja nuestra tradición y compromiso con el sabor auténtico.
+                        Además, renovamos nuestras <strong>promociones</strong> constantemente para que siempre tengas una opción deliciosa y accesible.
+                    </p>
                 </div>
-
-                <div class="d-flex flex-column flex-md-row gap-3">
-                    <a class="btn btn-outline-success d-flex align-items-center gap-2 fw-semibold shadow-sm" target="_blank" href="https://web.whatsapp.com/">
-                        <i class="bi bi-whatsapp fs-4"></i> Escribinos por WhatsApp
-                    </a>
-                    <a class="btn btn-outline-primary d-flex align-items-center gap-2 fw-semibold shadow-sm" target="_blank" href="https://maps.app.goo.gl/2L1eU1cPGsSpmUDJ9?g_st=aw">
-                        <i class="bi bi-geo-alt-fill fs-5"></i> Encontranos aquí
-                    </a>
-                </div>
-
-            </section>
+            </div>
+        </div>
+    </section>
 
             <!-- Sección de promociones -->
          @*    <section class="container my-5">

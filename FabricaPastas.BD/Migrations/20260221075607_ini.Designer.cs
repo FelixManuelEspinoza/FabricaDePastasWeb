@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FabricaPastas.BD.Migrations
 {
     [DbContext(typeof(Context))]
-    [Migration("20260221053258_ini")]
+    [Migration("20260221075607_ini")]
     partial class ini
     {
         /// <inheritdoc />
