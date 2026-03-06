@@ -80,10 +80,24 @@ namespace FabricaPastas.Server.Util
             CreateMap<Tipo_Cliente, CrearTipo_ClienteDTO>();
             #endregion
 
+            //#region DTO Usuario
+            //CreateMap<CrearUsuarioDTO, Usuario>();
+            //CreateMap<Usuario, CrearUsuarioDTO>();
+            //#endregion
+
             #region DTO Usuario
-            CreateMap<CrearUsuarioDTO, Usuario>();
-            CreateMap<Usuario, CrearUsuarioDTO>();
+            // ⚠️ IMPORTANTE: En el DTO las propiedades tienen tilde (Teléfono / Dirección)
+            // y en la entidad Usuario no (Telefono / Direccion). Hay que mapear a mano.
+            CreateMap<CrearUsuarioDTO, Usuario>()
+                .ForMember(d => d.Telefono, opt => opt.MapFrom(s => s.Teléfono))
+                .ForMember(d => d.Direccion, opt => opt.MapFrom(s => s.Dirección))
+                .ForMember(d => d.PasswordHash, opt => opt.Ignore());
+
+            CreateMap<Usuario, CrearUsuarioDTO>()
+                .ForMember(d => d.Teléfono, opt => opt.MapFrom(s => s.Telefono))
+                .ForMember(d => d.Dirección, opt => opt.MapFrom(s => s.Direccion));
             #endregion
+
 
             #region DTO Login
             CreateMap<CrearLoginDTO, Usuario>()

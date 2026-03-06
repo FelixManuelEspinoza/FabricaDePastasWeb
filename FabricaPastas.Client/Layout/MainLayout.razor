@@ -1,25 +1,11 @@
 ﻿@inherits LayoutComponentBase
 
-@* 
-    MainLayout (arquitectura original, NO se toca el sidebar estándar):
-    - .sidebar contiene el NavMenu DEV (inspector) tal como estaba
-    - En <main> agregamos el menú REAL (TopNavMenu) dentro de la página
-    - El contenido real de cada página va en @Body
-*@
-
 <div class="page">
-    @* Sidebar estándar del template (NO tocar) *@
-    <div class="sidebar">
-        <NavMenu />
-    </div>
-
     <main>
-        @* ===== Menú REAL dentro de la página (NO es el DevMenu) ===== *@
         <div class="top-row px-4">
             <TopNavMenu />
         </div>
 
-        @* ===== Contenido de cada página ===== *@
         <article class="content px-4">
             @Body
         </article>

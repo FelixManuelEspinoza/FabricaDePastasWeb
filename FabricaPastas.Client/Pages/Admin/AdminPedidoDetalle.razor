@@ -210,7 +210,7 @@
             Cargando = true;
 
             // Estados (si existe el endpoint en tu proyecto actual)
-            var respEstados = await http.Get<List<Estado_Pedido>>("api/Pedido/Estados");
+            var respEstados = await http.Get<List<Estado_Pedido>>("api/Estado_Pedido");
             Estados = respEstados.Error ? new() : (respEstados.Respuesta ?? new());
 
             // Pedido

@@ -68,7 +68,11 @@ else
                 {
                     <tr>
                         <td class="text-center">@d.Lista_Precio?.Tipo</td>
-                        <td>@d.Producto?.Nombre</td>
+                        <td>
+                            @(d.Producto?.Nombre
+                                                ?? Productos?.FirstOrDefault(p => p.Id == d.Producto_Id)?.Nombre
+                                                ?? "-")
+                </td>
                         <td class="text-end">
                             @if (EditandoId == d.Id)
                             {

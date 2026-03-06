@@ -12,11 +12,6 @@
 else
 {
     <div class="page">
-        @* Sidebar del template (lo dejamos igual para no tocar la arquitectura) *@
-        <div class="sidebar">
-            <NavMenu />
-        </div>
-
         <main>
             <div class="top-row px-4">
                 <AdminNavMenu />
@@ -28,7 +23,6 @@ else
         </main>
     </div>
 }
-
 @code {
     private bool cargando = true;
 

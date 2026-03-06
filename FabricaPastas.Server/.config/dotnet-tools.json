@@ -8,6 +8,20 @@
         "dotnet-msidentity"
       ],
       "rollForward": false
+    },
+    "dotnet-ef": {
+      "version": "10.0.3",
+      "commands": [
+        "dotnet-ef"
+      ],
+      "rollForward": false
+    },
+    "swashbuckle.aspnetcore.cli": {
+      "version": "6.6.2",
+      "commands": [
+        "swagger"
+      ],
+      "rollForward": false
     }
   }
 }

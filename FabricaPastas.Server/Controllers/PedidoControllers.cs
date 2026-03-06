@@ -213,6 +213,24 @@ namespace FabricaPastas.Server.Controllers
             }
         }
 
+        [HttpPut("{id:int}/estado")]
+        public async Task<ActionResult> CambiarEstado(int id, [FromBody] int estadoPedidoId)
+        {
+            var pedidoExistente = await _context.Pedido.FindAsync(id);
+            if (pedidoExistente == null)
+                return NotFound("No se encontró el pedido.");
+
+            // Validar que el estado exista
+            var existeEstado = await _context.Estado_Pedido.AnyAsync(e => e.Id == estadoPedidoId);
+            if (!existeEstado)
+                return BadRequest("Estado inválido.");
+
+            pedidoExistente.Estado_Pedido_Id = estadoPedidoId;
+
+            await _context.SaveChangesAsync();
+            return Ok();
+        }
+
         [HttpGet("{id:int}/recibo")]
         public async Task<IActionResult> DescargarRecibo(int id)
         {
